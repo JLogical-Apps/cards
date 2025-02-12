@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:solitaire/game_view.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
 import 'package:solitaire/games/solitaire.dart';
@@ -9,8 +10,16 @@ void main() {
     title: 'Cards',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       useMaterial3: true,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.black,
+          iconColor: Colors.black,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+        ),
+      )
     ),
     home: HomePage(),
   ));
@@ -21,6 +30,8 @@ class HomePage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     final games = {
       'Golf Solitaire': GolfSolitaire(),
       'Solitaire': Solitaire(),

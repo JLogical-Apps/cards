@@ -9,8 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_hooks: ^0.20.5
+
+  adaptive_action_sheet: ^2.0.3
   collection:
+  flutter_hooks: ^0.20.5
 
   card_game:
     path: ../cards

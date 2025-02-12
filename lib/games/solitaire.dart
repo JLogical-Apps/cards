@@ -2,6 +2,7 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/widgets/card_scaffold.dart';
 
 class SolitaireState {
   final List<List<SuitedCard>> hiddenCards;
@@ -10,12 +11,15 @@ class SolitaireState {
   final List<SuitedCard> revealedDeck;
   final Map<CardSuit, List<SuitedCard>> completedCards;
 
+  final List<SolitaireState> stateHistory;
+
   SolitaireState({
     required this.hiddenCards,
     required this.revealedCards,
     required this.deck,
     required this.revealedDeck,
     required this.completedCards,
+    required this.stateHistory,
   });
 
   static SolitaireState get initialState {
@@ -36,6 +40,7 @@ class SolitaireState {
       deck: deck,
       revealedDeck: [],
       completedCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
+      stateHistory: [],
     );
   }
 
@@ -218,7 +223,12 @@ class SolitaireState {
             suit,
             SuitedCard.values.map((value) => SuitedCard(suit: suit, value: value)).toList(),
           ))),
+      stateHistory: stateHistory + [this],
     );
+  }
+
+  SolitaireState withUndo() {
+    return stateHistory.last;
   }
 
   SolitaireState copyWith({
@@ -234,6 +244,7 @@ class SolitaireState {
       deck: deck ?? this.deck,
       revealedDeck: revealedDeck ?? this.revealedDeck,
       completedCards: completedCards ?? this.completedCards,
+      stateHistory: stateHistory + [this],
     );
   }
 }
@@ -245,81 +256,91 @@ class Solitaire extends HookWidget {
   Widget build(BuildContext context) {
     final state = useState(SolitaireState.initialState);
 
-    return CardGame<SuitedCard, dynamic>(
-      style: deckCardStyle(sizeMultiplier: 1.3),
-      children: [
-        SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
+    return CardScaffold(
+      onNewGame: () => state.value = SolitaireState.initialState,
+      onRestart: () => state.value = state.value.stateHistory.firstOrNull ?? state.value,
+      onUndo: state.value.stateHistory.isEmpty ? null : () => state.value = state.value.withUndo(),
+      body: Padding(
+        padding: EdgeInsets.all(4),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableHeight = constraints.maxHeight - (6 * 4);
+            final cardHeight = availableHeight / 7;
+
+            return CardGame(
+              style: deckCardStyle(sizeMultiplier: cardHeight / 89),
               children: [
-                Expanded(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 4,
-                      children: List<Widget>.generate(7, (i) {
-                        final hiddenCards = state.value.hiddenCards[i];
-                        final revealedCards = state.value.revealedCards[i];
-
-                        return CardRow<SuitedCard, dynamic>(
-                          value: i,
-                          spacing: 30,
-                          values: hiddenCards + revealedCards,
-                          canCardBeGrabbed: (_, card) => revealedCards.contains(card),
-                          isCardFlipped: (_, card) => hiddenCards.contains(card),
-                          onCardPressed: (card) {
-                            if (hiddenCards.contains(card)) {
-                              return;
-                            }
-
-                            final cardIndex = revealedCards.indexOf(card);
-
-                            state.value = state.value.withAutoMove(i, revealedCards.sublist(cardIndex));
-                          },
-                          canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
-                          onCardMovedHere: (move) =>
-                              state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i),
-                        );
-                      }).toList()),
-                ),
-                SizedBox(width: 4),
-                Column(
+                Row(
                   children: [
-                    SizedBox(height: 4),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => state.value = state.value.withDrawOrRefresh(),
-                      child: CardDeck<SuitedCard, dynamic>.flipped(
-                        value: 'deck',
-                        values: state.value.deck,
-                      ),
+                    Expanded(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 4,
+                          children: List<Widget>.generate(7, (i) {
+                            final hiddenCards = state.value.hiddenCards[i];
+                            final revealedCards = state.value.revealedCards[i];
+
+                            return CardRow<SuitedCard, dynamic>(
+                              value: i,
+                              spacing: 30,
+                              values: hiddenCards + revealedCards,
+                              canCardBeGrabbed: (_, card) => revealedCards.contains(card),
+                              isCardFlipped: (_, card) => hiddenCards.contains(card),
+                              onCardPressed: (card) {
+                                if (hiddenCards.contains(card)) {
+                                  return;
+                                }
+
+                                final cardIndex = revealedCards.indexOf(card);
+
+                                state.value = state.value.withAutoMove(i, revealedCards.sublist(cardIndex));
+                              },
+                              canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
+                              onCardMovedHere: (move) =>
+                                  state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i),
+                            );
+                          }).toList()),
                     ),
-                    SizedBox(height: 4),
-                    CardDeck<SuitedCard, dynamic>(
-                      value: 'revealed-deck',
-                      values: state.value.revealedDeck,
-                      canMoveCardHere: (_) => false,
-                      onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
-                      canGrab: true,
-                    ),
-                    Spacer(),
-                    ...state.value.completedCards.entries.expand((entry) => [
-                          CardDeck<SuitedCard, dynamic>(
-                            value: 'completed-cards: ${entry.key}',
-                            values: entry.value,
-                            canGrab: false,
-                            onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                    SizedBox(width: 4),
+                    Column(
+                      children: [
+                        SizedBox(height: 4),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => state.value = state.value.withDrawOrRefresh(),
+                          child: CardDeck<SuitedCard, dynamic>.flipped(
+                            value: 'deck',
+                            values: state.value.deck,
                           ),
-                          SizedBox(height: 4),
-                        ]),
+                        ),
+                        SizedBox(height: 4),
+                        CardDeck<SuitedCard, dynamic>(
+                          value: 'revealed-deck',
+                          values: state.value.revealedDeck,
+                          canMoveCardHere: (_) => false,
+                          onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
+                          canGrab: true,
+                        ),
+                        Spacer(),
+                        ...state.value.completedCards.entries.expand((entry) => [
+                              CardDeck<SuitedCard, dynamic>(
+                                value: 'completed-cards: ${entry.key}',
+                                values: entry.value,
+                                canGrab: false,
+                                onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                              ),
+                              SizedBox(height: 4),
+                            ]),
+                      ],
+                    ),
                   ],
                 ),
               ],
-            ),
-          ),
+            );
+          },
         ),
-      ],
+      ),
     );
   }
 }
