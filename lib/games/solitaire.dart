@@ -2,6 +2,7 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/hooks/hooks.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 
 class SolitaireState {
@@ -52,9 +53,9 @@ class SolitaireState {
 
   int getCardValue(SuitedCard card) => SuitedCardValueMapper.aceAsLowest.getValue(card);
 
-  SolitaireState withAutoMove(int column, List<SuitedCard> cards) {
+  SolitaireState withAutoTap(int column, List<SuitedCard> cards) {
     if (cards.length == 1 && canComplete(cards.first)) {
-      return withAttemptToComplete(column, cards.first);
+      return withAttemptToComplete(column);
     }
 
     final newColumn = List.generate(7, (i) => canMove(cards, i)).indexOf(true);
@@ -96,8 +97,9 @@ class SolitaireState {
         (completedSuitCards.isNotEmpty && getCardValue(completedSuitCards.last) + 1 == getCardValue(card));
   }
 
-  SolitaireState withAttemptToComplete(int column, SuitedCard card) {
-    if (canComplete(card)) {
+  SolitaireState withAttemptToComplete(int column) {
+    final card = revealedCards[column].lastOrNull;
+    if (card != null && canComplete(card)) {
       final newRevealedCards = [...revealedCards];
       newRevealedCards[column] = [...revealedCards[column]]..removeLast();
 
@@ -107,10 +109,6 @@ class SolitaireState {
       if (newRevealedCards[column].isEmpty && lastHiddenCard != null) {
         newRevealedCards[column] = [lastHiddenCard];
         newHiddenCards[column] = [...newHiddenCards[column]]..removeLast();
-      }
-
-      if (newHiddenCards.every((cards) => cards.isEmpty)) {
-        return withCompletedGame();
       }
 
       return copyWith(
@@ -175,10 +173,6 @@ class SolitaireState {
       newHiddenCards[oldColumn] = [...newHiddenCards[oldColumn]]..removeLast();
     }
 
-    if (newHiddenCards.every((cards) => cards.isEmpty)) {
-      return withCompletedGame();
-    }
-
     return copyWith(
       revealedCards: newRevealedCards,
       hiddenCards: newHiddenCards,
@@ -213,22 +207,38 @@ class SolitaireState {
     );
   }
 
-  SolitaireState withCompletedGame() {
-    return SolitaireState(
-      hiddenCards: List.generate(7, (i) => []),
-      revealedCards: List.generate(7, (i) => []),
-      deck: [],
-      revealedDeck: [],
-      completedCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(
-            suit,
-            SuitedCard.values.map((value) => SuitedCard(suit: suit, value: value)).toList(),
-          ))),
-      stateHistory: stateHistory + [this],
-    );
-  }
-
   SolitaireState withUndo() {
     return stateHistory.last;
+  }
+
+  SolitaireState? withAutoMove() {
+    final lowestCompletedValue =
+        completedCards.values.map((cards) => cards.lastOrNull).map((card) => card == null ? 0 : getCardValue(card)).min;
+
+    bool canAutoMove(SuitedCard? card) {
+      if (card == null) {
+        return false;
+      }
+
+      final canMove = canComplete(card);
+      if (!canMove) {
+        return false;
+      }
+
+      final value = getCardValue(card);
+      return lowestCompletedValue + 2 >= value;
+    }
+
+    final cardsAutoMoveIndex = revealedCards.indexWhere((cards) => cards.isEmpty ? false : canAutoMove(cards.last));
+    if (cardsAutoMoveIndex != -1) {
+      return withAttemptToComplete(cardsAutoMoveIndex);
+    }
+
+    if (revealedDeck.isNotEmpty && canAutoMove(revealedDeck.last)) {
+      return withAttemptToCompleteFromDeck();
+    }
+
+    return null;
   }
 
   SolitaireState copyWith({
@@ -256,89 +266,104 @@ class Solitaire extends HookWidget {
   Widget build(BuildContext context) {
     final state = useState(SolitaireState.initialState);
 
-    return CardScaffold(
-      onNewGame: () => state.value = SolitaireState.initialState,
-      onRestart: () => state.value = state.value.stateHistory.firstOrNull ?? state.value,
-      onUndo: state.value.stateHistory.isEmpty ? null : () => state.value = state.value.withUndo(),
-      body: Padding(
-        padding: EdgeInsets.all(4),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final availableHeight = constraints.maxHeight - (6 * 4);
-            final cardHeight = availableHeight / 7;
+    final isUserInteractingState = useState(false);
+    useDelayedAutoMove(
+      isUserInteracting: isUserInteractingState.value,
+      stateGetter: () => state.value,
+      nextStateGetter: (state) => state.withAutoMove(),
+      onNewState: (newState) => state.value = newState,
+    );
 
-            return CardGame(
-              style: deckCardStyle(sizeMultiplier: cardHeight / 89),
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 4,
-                          children: List<Widget>.generate(7, (i) {
-                            final hiddenCards = state.value.hiddenCards[i];
-                            final revealedCards = state.value.revealedCards[i];
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerCancel: (event) => isUserInteractingState.value = false,
+      onPointerUp: (event) => isUserInteractingState.value = false,
+      onPointerDown: (event) => isUserInteractingState.value = true,
+      child: CardScaffold(
+        onNewGame: () => state.value = SolitaireState.initialState,
+        onRestart: () => state.value = state.value.stateHistory.firstOrNull ?? state.value,
+        onUndo: state.value.stateHistory.isEmpty ? null : () => state.value = state.value.withUndo(),
+        body: Padding(
+          padding: EdgeInsets.all(4),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableHeight = constraints.maxHeight - (6 * 4);
+              final cardHeight = availableHeight / 7;
 
-                            return CardRow<SuitedCard, dynamic>(
-                              value: i,
-                              spacing: 30,
-                              values: hiddenCards + revealedCards,
-                              canCardBeGrabbed: (_, card) => revealedCards.contains(card),
-                              isCardFlipped: (_, card) => hiddenCards.contains(card),
-                              onCardPressed: (card) {
-                                if (hiddenCards.contains(card)) {
-                                  return;
-                                }
+              return CardGame(
+                style: deckCardStyle(sizeMultiplier: cardHeight / 89),
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 4,
+                            children: List<Widget>.generate(7, (i) {
+                              final hiddenCards = state.value.hiddenCards[i];
+                              final revealedCards = state.value.revealedCards[i];
 
-                                final cardIndex = revealedCards.indexOf(card);
+                              return CardRow<SuitedCard, dynamic>(
+                                value: i,
+                                spacing: 30,
+                                values: hiddenCards + revealedCards,
+                                canCardBeGrabbed: (_, card) => revealedCards.contains(card),
+                                isCardFlipped: (_, card) => hiddenCards.contains(card),
+                                onCardPressed: (card) {
+                                  if (hiddenCards.contains(card)) {
+                                    return;
+                                  }
 
-                                state.value = state.value.withAutoMove(i, revealedCards.sublist(cardIndex));
-                              },
-                              canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
-                              onCardMovedHere: (move) =>
-                                  state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i),
-                            );
-                          }).toList()),
-                    ),
-                    SizedBox(width: 4),
-                    Column(
-                      children: [
-                        SizedBox(height: 4),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => state.value = state.value.withDrawOrRefresh(),
-                          child: CardDeck<SuitedCard, dynamic>.flipped(
-                            value: 'deck',
-                            values: state.value.deck,
+                                  final cardIndex = revealedCards.indexOf(card);
+
+                                  state.value = state.value.withAutoTap(i, revealedCards.sublist(cardIndex));
+                                },
+                                canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
+                                onCardMovedHere: (move) =>
+                                    state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i),
+                              );
+                            }).toList()),
+                      ),
+                      SizedBox(width: 4),
+                      Column(
+                        children: [
+                          SizedBox(height: 4),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => state.value = state.value.withDrawOrRefresh(),
+                            child: CardDeck<SuitedCard, dynamic>.flipped(
+                              value: 'deck',
+                              values: state.value.deck,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 4),
-                        CardDeck<SuitedCard, dynamic>(
-                          value: 'revealed-deck',
-                          values: state.value.revealedDeck,
-                          canMoveCardHere: (_) => false,
-                          onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
-                          canGrab: true,
-                        ),
-                        Spacer(),
-                        ...state.value.completedCards.entries.expand((entry) => [
-                              CardDeck<SuitedCard, dynamic>(
-                                value: 'completed-cards: ${entry.key}',
-                                values: entry.value,
-                                canGrab: false,
-                                onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
-                              ),
-                              SizedBox(height: 4),
-                            ]),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+                          SizedBox(height: 4),
+                          CardDeck<SuitedCard, dynamic>(
+                            value: 'revealed-deck',
+                            values: state.value.revealedDeck,
+                            canMoveCardHere: (_) => false,
+                            onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
+                            canGrab: true,
+                          ),
+                          Spacer(),
+                          ...state.value.completedCards.entries.expand((entry) => [
+                                CardDeck<SuitedCard, dynamic>(
+                                  value: 'completed-cards: ${entry.key}',
+                                  values: entry.value,
+                                  canGrab: false,
+                                  onCardPressed: (card) =>
+                                      state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                                ),
+                                SizedBox(height: 4),
+                              ]),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
