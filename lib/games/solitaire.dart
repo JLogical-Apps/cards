@@ -156,7 +156,9 @@ class SolitaireState {
   SolitaireState withMove(List<SuitedCard> cards, dynamic oldColumn, int newColumn) {
     return oldColumn == 'revealed-deck'
         ? withMoveFromDeck(cards, newColumn)
-        : withMoveFromColumn(cards, oldColumn, newColumn);
+        : oldColumn is CardSuit
+            ? withMoveFromCompleted(oldColumn, newColumn)
+            : withMoveFromColumn(cards, oldColumn, newColumn);
   }
 
   SolitaireState withMoveFromColumn(List<SuitedCard> cards, int oldColumn, int newColumn) {
@@ -348,9 +350,9 @@ class Solitaire extends HookWidget {
                           Spacer(),
                           ...state.value.completedCards.entries.expand((entry) => [
                                 CardDeck<SuitedCard, dynamic>(
-                                  value: 'completed-cards: ${entry.key}',
+                                  value: entry.key,
                                   values: entry.value,
-                                  canGrab: false,
+                                  canGrab: true,
                                   onCardPressed: (card) =>
                                       state.value = state.value.withAutoMoveFromCompleted(entry.key),
                                 ),
