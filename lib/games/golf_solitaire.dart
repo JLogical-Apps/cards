@@ -29,14 +29,14 @@ class GolfSolitaireState {
 
     return GolfSolitaireState(
       cards: cards,
-      deck: deck.skip(1).toList(),
-      completedCards: [deck.first],
+      deck: deck,
+      completedCards: [],
       history: [],
     );
   }
 
   bool canSelect(SuitedCard card) {
-    return SuitedCardDistanceMapper.rollover.getDistance(completedCards.last, card) == 1;
+    return completedCards.isEmpty || SuitedCardDistanceMapper.rollover.getDistance(completedCards.last, card) == 1;
   }
 
   GolfSolitaireState withSelection(SuitedCard card) => GolfSolitaireState(
@@ -56,6 +56,8 @@ class GolfSolitaireState {
       );
 
   GolfSolitaireState withUndo() => history.last;
+
+  bool get isVictory => cards.every((column) => column.isEmpty);
 }
 
 class GolfSolitaire extends HookWidget {
@@ -69,6 +71,7 @@ class GolfSolitaire extends HookWidget {
       onNewGame: () => state.value = GolfSolitaireState.initialState,
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
+      isVictory: state.value.isVictory,
       builder: (context, constraints) {
         final availableHeight = constraints.maxHeight - (6 * 4);
         final cardHeight = availableHeight / 7;

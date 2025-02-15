@@ -243,6 +243,8 @@ class SolitaireState {
     return null;
   }
 
+  bool get isVictory => completedCards.values.every((cards) => cards.length == 13);
+
   SolitaireState copyWith({
     List<List<SuitedCard>>? hiddenCards,
     List<List<SuitedCard>>? revealedCards,
@@ -276,6 +278,7 @@ class Solitaire extends HookWidget {
         onNewGame: () => state.value = SolitaireState.initialState,
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
+        isVictory: state.value.isVictory,
         builder: (context, constraints) {
           final availableHeight = constraints.maxHeight - (6 * 4);
           final cardHeight = availableHeight / 7;
