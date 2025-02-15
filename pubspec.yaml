@@ -12,7 +12,15 @@ dependencies:
 
   adaptive_action_sheet: ^2.0.3
   collection:
-  flutter_hooks: ^0.20.5
+  flutter_hooks: ^0.21.1-pre.4
+  provider: ^6.1.2
+  smooth_page_indicator: ^1.2.0+3
+
+  utils:
+    git:
+      url: https://github.com/JLogical-Apps/flood
+      ref: v4.3
+      path: packages/utils/utils
 
   card_game:
     path: ../cards

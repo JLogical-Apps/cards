@@ -1,6 +1,7 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 void useDelayedAutoMove<T>({
+  bool enabled = true,
   required bool isUserInteracting,
   required T Function() stateGetter,
   required T? Function(T) nextStateGetter,
@@ -10,7 +11,7 @@ void useDelayedAutoMove<T>({
 }) {
   final isProcessing = useState(false);
   useEffect(() {
-    if (isUserInteracting || isProcessing.value) {
+    if (isUserInteracting || isProcessing.value || !enabled) {
       return null;
     }
 
