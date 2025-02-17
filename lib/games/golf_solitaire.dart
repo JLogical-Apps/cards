@@ -90,8 +90,13 @@ class GolfSolitaire extends HookWidget {
                               value: i,
                               values: column,
                               spacing: 30,
+                              canCardBeGrabbed: (_, __) => false,
                               maxGrabStackSize: 0,
                               onCardPressed: (card) {
+                                final lastCard = state.value.cards[i].lastOrNull;
+                                if (lastCard != card) {
+                                  return;
+                                }
                                 if (state.value.canSelect(card)) {
                                   state.value = state.value.withSelection(card);
                                 }
