@@ -1,11 +1,16 @@
+import 'dart:math';
+
 import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/group/exposed_deck.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
 
 class SolitaireState {
+  final int drawAmount;
+
   final List<List<SuitedCard>> hiddenCards;
   final List<List<SuitedCard>> revealedCards;
   final List<SuitedCard> deck;
@@ -15,6 +20,7 @@ class SolitaireState {
   final List<SolitaireState> history;
 
   SolitaireState({
+    this.drawAmount = 1,
     required this.hiddenCards,
     required this.revealedCards,
     required this.deck,
@@ -23,7 +29,7 @@ class SolitaireState {
     required this.history,
   });
 
-  static SolitaireState get initialState {
+  static SolitaireState getInitialState(int drawAmount) {
     var deck = SuitedCard.deck.shuffled();
 
     final hiddenCards = List.generate(7, (i) {
@@ -42,13 +48,17 @@ class SolitaireState {
       revealedDeck: [],
       completedCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
       history: [],
+      drawAmount: drawAmount,
     );
   }
 
   SolitaireState withDrawOrRefresh() {
     return deck.isEmpty
         ? copyWith(deck: revealedDeck.reversed.toList(), revealedDeck: [])
-        : copyWith(deck: deck.sublist(0, deck.length - 1), revealedDeck: revealedDeck + [deck.last]);
+        : copyWith(
+            deck: deck.sublist(0, max(0, deck.length - drawAmount)),
+            revealedDeck: revealedDeck + deck.reversed.take(drawAmount).toList(),
+          );
   }
 
   int getCardValue(SuitedCard card) => SuitedCardValueMapper.aceAsLowest.getValue(card);
@@ -258,24 +268,27 @@ class SolitaireState {
       deck: deck ?? this.deck,
       revealedDeck: revealedDeck ?? this.revealedDeck,
       completedCards: completedCards ?? this.completedCards,
+      drawAmount: drawAmount,
       history: history + [this],
     );
   }
 }
 
 class Solitaire extends HookWidget {
-  const Solitaire({super.key});
+  final int drawAmount;
+
+  const Solitaire({super.key, this.drawAmount = 1});
 
   @override
   Widget build(BuildContext context) {
-    final state = useState(SolitaireState.initialState);
+    final state = useState(SolitaireState.getInitialState(drawAmount));
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.withAutoMove(),
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
-        onNewGame: () => state.value = SolitaireState.initialState,
+        onNewGame: () => state.value = SolitaireState.getInitialState(drawAmount),
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
@@ -331,9 +344,11 @@ class Solitaire extends HookWidget {
                         ),
                       ),
                       SizedBox(height: 4),
-                      CardDeck<SuitedCard, dynamic>(
+                      ExposedCardDeck<SuitedCard, dynamic>(
                         value: 'revealed-deck',
                         values: state.value.revealedDeck,
+                        amountExposed: drawAmount,
+                        overlayOffset: Offset(0, 30),
                         canMoveCardHere: (_) => false,
                         onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
                         canGrab: true,

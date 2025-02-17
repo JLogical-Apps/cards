@@ -16,7 +16,8 @@ class HomePage extends HookWidget {
     final pageState = useState(0);
     final games = {
       'Golf Solitaire': GolfSolitaire(),
-      'Solitaire': Solitaire(),
+      'Solitaire (Easy)': Solitaire(drawAmount: 1),
+      'Solitaire (Hard)': Solitaire(drawAmount: 3),
     };
     return Scaffold(
       body: SafeArea(
