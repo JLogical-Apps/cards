@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire/context/card_game_context.dart';
+import 'package:solitaire/home_page.dart';
 
 class CardScaffold extends HookWidget {
   final Widget Function(BuildContext, BoxConstraints) builder;
@@ -90,10 +91,8 @@ class CardScaffold extends HookWidget {
                                   BottomSheetAction(
                                     title: Text('Close'),
                                     leading: Icon(Icons.close),
-                                    onPressed: (_) {
-                                      Navigator.of(context).pop();
-                                      Navigator.of(context).pop();
-                                    },
+                                    onPressed: (_) => Navigator.of(context)
+                                        .pushReplacement(MaterialPageRoute(builder: (_) => HomePage())),
                                   ),
                                 ],
                               );

@@ -57,8 +57,8 @@ class HomePage extends HookWidget {
                                             .copyWith(fontWeight: FontWeight.bold),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () => Navigator.of(context)
-                                            .push(MaterialPageRoute(builder: (_) => GameView(cardGame: game))),
+                                        onPressed: () => Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(builder: (_) => GameView(cardGame: game))),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.black,
                                           foregroundColor: Colors.white,
