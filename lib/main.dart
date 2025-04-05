@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:solitaire/home_page.dart';
 
 void main() {
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MaterialApp(
     title: 'Cards',
     debugShowCheckedModeBanner: false,

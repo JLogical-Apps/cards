@@ -5,6 +5,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/group/exposed_deck.dart';
+import 'package:solitaire/utils/axis_extensions.dart';
+import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
 
@@ -293,26 +295,74 @@ class Solitaire extends HookWidget {
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
         builder: (context, constraints) {
-          final availableHeight = constraints.maxHeight - (6 * 4);
-          final cardHeight = availableHeight / 7;
+          final axis = constraints.largestAxis;
+          final minSize = constraints.smallest.longestSide;
+          final spacing = minSize / 40;
+          final cardOffset = minSize / 25;
+
+          final hiddenDeck = GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => state.value = state.value.withDrawOrRefresh(),
+            child: CardDeck<SuitedCard, dynamic>.flipped(
+              value: 'deck',
+              values: state.value.deck,
+            ),
+          );
+          final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
+            value: 'revealed-deck',
+            values: state.value.revealedDeck,
+            amountExposed: drawAmount,
+            overlayOffset: axis.inverted.offset * 30,
+            canMoveCardHere: (_) => false,
+            onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
+            canGrab: true,
+          );
+
+          final completedDecks = state.value.completedCards.entries
+              .map((entry) => CardDeck<SuitedCard, dynamic>(
+                    value: entry.key,
+                    values: entry.value,
+                    canGrab: true,
+                    onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                  ))
+              .toList();
 
           return CardGame(
-            style: deckCardStyle(sizeMultiplier: cardHeight / 89),
+            style: deckCardStyle(
+              sizeMultiplier: constraints.findCardSizeMultiplier(
+                maxRows: axis == Axis.horizontal ? 9 : 2,
+                maxCols: axis == Axis.horizontal ? 4 : 7,
+                spacing: spacing,
+              ),
+            ),
             children: [
               Row(
                 children: [
+                  if (axis == Axis.horizontal) ...[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: spacing,
+                      children: [
+                        hiddenDeck,
+                        exposedDeck,
+                      ],
+                    ),
+                    SizedBox(width: spacing),
+                  ],
                   Expanded(
-                    child: Column(
+                    child: Flex(
+                        direction: axis,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 4,
+                        spacing: spacing,
                         children: List<Widget>.generate(7, (i) {
                           final hiddenCards = state.value.hiddenCards[i];
                           final revealedCards = state.value.revealedCards[i];
 
-                          return CardRow<SuitedCard, dynamic>(
+                          return CardLinearGroup<SuitedCard, dynamic>(
                             value: i,
-                            spacing: 30,
+                            cardOffset: axis.inverted.offset * cardOffset,
+                            maxGrabStackSize: null,
                             values: hiddenCards + revealedCards,
                             canCardBeGrabbed: (_, card) => revealedCards.contains(card),
                             isCardFlipped: (_, card) => hiddenCards.contains(card),
@@ -331,40 +381,22 @@ class Solitaire extends HookWidget {
                           );
                         }).toList()),
                   ),
-                  SizedBox(width: 4),
-                  Column(
-                    children: [
-                      SizedBox(height: 4),
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => state.value = state.value.withDrawOrRefresh(),
-                        child: CardDeck<SuitedCard, dynamic>.flipped(
-                          value: 'deck',
-                          values: state.value.deck,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      ExposedCardDeck<SuitedCard, dynamic>(
-                        value: 'revealed-deck',
-                        values: state.value.revealedDeck,
-                        amountExposed: drawAmount,
-                        overlayOffset: Offset(0, 30),
-                        canMoveCardHere: (_) => false,
-                        onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
-                        canGrab: true,
-                      ),
-                      Spacer(),
-                      ...state.value.completedCards.entries.expand((entry) => [
-                            CardDeck<SuitedCard, dynamic>(
-                              value: entry.key,
-                              values: entry.value,
-                              canGrab: true,
-                              onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
-                            ),
-                            SizedBox(height: 4),
-                          ]),
-                    ],
-                  ),
+                  SizedBox(width: spacing),
+                  if (axis == Axis.vertical)
+                    Column(
+                      spacing: spacing,
+                      children: [
+                        hiddenDeck,
+                        exposedDeck,
+                        Spacer(),
+                        ...completedDecks,
+                      ],
+                    )
+                  else
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: completedDecks,
+                    ),
                 ],
               ),
             ],

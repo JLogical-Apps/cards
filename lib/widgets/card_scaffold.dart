@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
@@ -53,9 +55,9 @@ class CardScaffold extends HookWidget {
             ),
             if (!isPreview)
               Container(
-                height: MediaQuery.paddingOf(context).bottom + 32,
+                height: max(MediaQuery.paddingOf(context).bottom + 32, 48),
                 color: Colors.white.withValues(alpha: 0.2),
-                alignment: Alignment.topCenter,
+                alignment: Alignment.center,
                 child: SafeArea(
                   top: false,
                   bottom: false,
@@ -63,6 +65,7 @@ class CardScaffold extends HookWidget {
                     padding: EdgeInsets.symmetric(horizontal: 24),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Tooltip(
                           message: 'Menu',
