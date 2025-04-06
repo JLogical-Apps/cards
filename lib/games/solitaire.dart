@@ -19,6 +19,7 @@ class SolitaireState {
   final List<SuitedCard> revealedDeck;
   final Map<CardSuit, List<SuitedCard>> completedCards;
 
+  final bool canAutoMove;
   final List<SolitaireState> history;
 
   SolitaireState({
@@ -28,6 +29,7 @@ class SolitaireState {
     required this.deck,
     required this.revealedDeck,
     required this.completedCards,
+    required this.canAutoMove,
     required this.history,
   });
 
@@ -50,6 +52,7 @@ class SolitaireState {
       revealedDeck: [],
       completedCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
       history: [],
+      canAutoMove: true,
       drawAmount: drawAmount,
     );
   }
@@ -130,6 +133,7 @@ class SolitaireState {
           ...completedCards,
           card.suit: [...completedCards[card.suit]!, card],
         },
+        canAutoMove: true,
       );
     }
 
@@ -149,6 +153,7 @@ class SolitaireState {
           ...completedCards,
           revealedCard.suit: [...completedCards[revealedCard.suit]!, revealedCard],
         },
+        canAutoMove: true,
       );
     }
 
@@ -190,6 +195,7 @@ class SolitaireState {
     return copyWith(
       revealedCards: newRevealedCards,
       hiddenCards: newHiddenCards,
+      canAutoMove: true,
     );
   }
 
@@ -202,6 +208,7 @@ class SolitaireState {
     return copyWith(
       revealedCards: newRevealedCards,
       revealedDeck: newRevealedDeck,
+      canAutoMove: true,
     );
   }
 
@@ -218,11 +225,12 @@ class SolitaireState {
     return copyWith(
       revealedCards: newRevealedCards,
       completedCards: newCompletedCards,
+      canAutoMove: false,
     );
   }
 
   SolitaireState withUndo() {
-    return history.last;
+    return history.last.copyWith(canAutoMove: false, saveNewStateToHistory: false);
   }
 
   SolitaireState? withAutoMove() {
@@ -263,6 +271,8 @@ class SolitaireState {
     List<SuitedCard>? deck,
     List<SuitedCard>? revealedDeck,
     Map<CardSuit, List<SuitedCard>>? completedCards,
+    bool? canAutoMove,
+    bool saveNewStateToHistory = true,
   }) {
     return SolitaireState(
       hiddenCards: hiddenCards ?? this.hiddenCards,
@@ -271,7 +281,8 @@ class SolitaireState {
       revealedDeck: revealedDeck ?? this.revealedDeck,
       completedCards: completedCards ?? this.completedCards,
       drawAmount: drawAmount,
-      history: history + [this],
+      canAutoMove: canAutoMove ?? this.canAutoMove,
+      history: history + [if (saveNewStateToHistory) this],
     );
   }
 }
@@ -287,7 +298,7 @@ class Solitaire extends HookWidget {
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
-      nextStateGetter: (state) => state.withAutoMove(),
+      nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
         onNewGame: () => state.value = SolitaireState.getInitialState(drawAmount),
@@ -312,7 +323,7 @@ class Solitaire extends HookWidget {
             value: 'revealed-deck',
             values: state.value.revealedDeck,
             amountExposed: drawAmount,
-            overlayOffset: axis.inverted.offset * 30,
+            overlayOffset: Offset(0, 30),
             canMoveCardHere: (_) => false,
             onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
             canGrab: true,

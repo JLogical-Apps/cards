@@ -10,27 +10,48 @@ void useDelayedAutoMove<T>({
   Duration repeatingDelay = const Duration(milliseconds: 300),
 }) {
   final isProcessing = useState(false);
+  final shouldStopState = useState(false);
+
   useEffect(() {
-    if (isUserInteracting || isProcessing.value || !enabled) {
+    if (isUserInteracting) {
+      shouldStopState.value = true;
+    }
+    return null;
+  }, [isUserInteracting]);
+
+  useEffect(() {
+    if (isProcessing.value || !enabled) {
       return null;
     }
 
-    final timer = Future.delayed(initialDelay, () async {
-      isProcessing.value = true;
+    if (shouldStopState.value) {
+      shouldStopState.value = false;
+      return null;
+    }
 
+    isProcessing.value = true;
+
+    () async {
+      await Future.delayed(initialDelay);
       while (true) {
+        if (shouldStopState.value) {
+          shouldStopState.value = false;
+          isProcessing.value = false;
+          return;
+        }
+
         final state = stateGetter();
         final nextState = nextStateGetter(state);
         if (nextState == null) {
           isProcessing.value = false;
-          break;
+          return;
         }
 
         onNewState(nextState);
         await Future.delayed(repeatingDelay);
       }
-    });
+    }();
 
-    return () => timer.ignore();
-  }, [stateGetter(), isUserInteracting]);
+    return null;
+  }, [stateGetter(), shouldStopState.value]);
 }
