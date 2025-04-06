@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +16,8 @@ class HomePage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final pageState = useState(0);
+    final pageController = usePageController();
+
     final games = {
       'Golf Solitaire': GolfSolitaire(),
       'Solitaire (Easy)': Solitaire(drawAmount: 1),
@@ -21,61 +25,112 @@ class HomePage extends HookWidget {
     };
     return Scaffold(
       body: SafeArea(
+        top: false,
+        bottom: false,
         child: Column(
-          spacing: 16,
           children: [
+            SizedBox(height: max(MediaQuery.paddingOf(context).bottom + 32, 48)),
             Expanded(
-              child: PageView(
-                onPageChanged: (page) => pageState.value = page,
-                children: games
-                    .mapToIterable((name, game) => Container(
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          margin: EdgeInsets.symmetric(horizontal: 16),
-                          child: Provider(
-                            create: (_) => CardGameContext(isPreview: true),
-                            child: Stack(
-                              children: [
-                                IgnorePointer(
-                                  child: game,
+              child: MediaQuery.removePadding(
+                removeTop: true,
+                removeBottom: true,
+                context: context,
+                child: Stack(
+                  children: [
+                    PageView(
+                      controller: pageController,
+                      onPageChanged: (page) => pageState.value = page,
+                      children: games
+                          .mapToIterable((name, game) => Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                Positioned.fill(
-                                  child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),
-                                ),
-                                Positioned.fill(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                margin: EdgeInsets.symmetric(horizontal: 16),
+                                child: Provider(
+                                  create: (_) => CardGameContext(isPreview: true),
+                                  child: Stack(
                                     children: [
-                                      Text(
-                                        name,
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineLarge!
-                                            .copyWith(fontWeight: FontWeight.bold),
+                                      IgnorePointer(
+                                        child: game,
                                       ),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(builder: (_) => GameView(cardGame: game))),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.black,
-                                          foregroundColor: Colors.white,
+                                      Positioned.fill(
+                                        child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),
+                                      ),
+                                      Positioned.fill(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              name,
+                                              textAlign: TextAlign.center,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineLarge!
+                                                  .copyWith(fontWeight: FontWeight.bold),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () => Navigator.of(context).pushReplacement(
+                                                  MaterialPageRoute(builder: (_) => GameView(cardGame: game))),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.black,
+                                                foregroundColor: Colors.white,
+                                              ),
+                                              child: Text('Play'),
+                                            ),
+                                          ],
                                         ),
-                                        child: Text('Play'),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                              ))
+                          .toList(),
+                    ),
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => pageController.animateToPage(
+                                (pageState.value - 1) % games.length,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOutCubic,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                iconColor: Colors.white,
+                                foregroundColor: Colors.white,
+                                shape: CircleBorder(),
+                              ),
+                              child: Icon(Icons.chevron_left),
                             ),
-                          ),
-                        ))
-                    .toList(),
+                            Spacer(),
+                            ElevatedButton(
+                              onPressed: () => pageController.animateToPage(
+                                (pageState.value + 1) % games.length,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOutCubic,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                iconColor: Colors.white,
+                                foregroundColor: Colors.white,
+                                shape: CircleBorder(),
+                              ),
+                              child: Icon(Icons.chevron_right),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            SizedBox(height: 16),
             AnimatedSmoothIndicator(
               activeIndex: pageState.value,
               count: games.length,
@@ -83,6 +138,7 @@ class HomePage extends HookWidget {
                 activeDotColor: Colors.black,
               ),
             ),
+            SizedBox(height: max(MediaQuery.paddingOf(context).bottom + 32, 48)),
           ],
         ),
       ),
