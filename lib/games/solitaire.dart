@@ -308,8 +308,15 @@ class Solitaire extends HookWidget {
         builder: (context, constraints) {
           final axis = constraints.largestAxis;
           final minSize = constraints.smallest.longestSide;
-          final spacing = minSize / 40;
-          final cardOffset = minSize / 25;
+          final spacing = minSize / 60;
+
+          final sizeMultiplier = constraints.findCardSizeMultiplier(
+            maxRows: axis == Axis.horizontal ? 2 : 7,
+            maxCols: axis == Axis.horizontal ? 10 : 2,
+            spacing: spacing,
+          );
+
+          final cardOffset = sizeMultiplier * 25;
 
           final hiddenDeck = GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -339,13 +346,7 @@ class Solitaire extends HookWidget {
               .toList();
 
           return CardGame(
-            style: deckCardStyle(
-              sizeMultiplier: constraints.findCardSizeMultiplier(
-                maxRows: axis == Axis.horizontal ? 9 : 2,
-                maxCols: axis == Axis.horizontal ? 4 : 7,
-                spacing: spacing,
-              ),
-            ),
+            style: deckCardStyle(sizeMultiplier: sizeMultiplier),
             children: [
               Row(
                 children: [
@@ -404,9 +405,17 @@ class Solitaire extends HookWidget {
                       ],
                     )
                   else
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: completedDecks,
+                    Row(
+                      spacing: spacing,
+                      children: [
+                        ...[
+                          completedDecks.take(2),
+                          completedDecks.skip(2),
+                        ].map((decks) => Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: decks.toList(),
+                            )),
+                      ],
                     ),
                 ],
               ),

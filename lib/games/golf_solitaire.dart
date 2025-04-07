@@ -2,6 +2,8 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/utils/axis_extensions.dart';
+import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 
 class GolfSolitaireState {
@@ -73,23 +75,33 @@ class GolfSolitaire extends HookWidget {
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
       builder: (context, constraints) {
-        final availableHeight = constraints.maxHeight - (6 * 4);
-        final cardHeight = availableHeight / 7;
+        final axis = constraints.largestAxis;
+        final minSize = constraints.smallest.longestSide;
+        final spacing = minSize / 100;
+
+        final sizeMultiplier = constraints.findCardSizeMultiplier(
+          maxRows: axis == Axis.horizontal ? 2 : 7,
+          maxCols: axis == Axis.horizontal ? 8 : 1,
+          spacing: spacing,
+        );
+
+        final cardOffset = sizeMultiplier * 25;
 
         return CardGame<SuitedCard, dynamic>(
-          style: deckCardStyle(sizeMultiplier: cardHeight / 89),
+          style: deckCardStyle(sizeMultiplier: sizeMultiplier),
           children: [
             Row(
               children: [
                 Expanded(
-                  flex: 2,
-                  child: Column(
+                  child: Flex(
+                    direction: axis,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: state.value.cards
-                        .mapIndexed((i, column) => CardRow<SuitedCard, dynamic>(
+                        .mapIndexed((i, column) => CardLinearGroup<SuitedCard, dynamic>(
+                              cardOffset: axis.inverted.offset * cardOffset,
                               value: i,
                               values: column,
-                              spacing: 30,
                               canCardBeGrabbed: (_, __) => false,
                               maxGrabStackSize: 0,
                               onCardPressed: (card) {
@@ -105,22 +117,21 @@ class GolfSolitaire extends HookWidget {
                         .toList(),
                   ),
                 ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 40,
-                    children: [
-                      CardDeck<SuitedCard, dynamic>.flipped(
-                        value: 'deck',
-                        values: state.value.deck,
-                        onCardPressed: (_) => state.value = state.value.withDraw(),
-                      ),
-                      CardDeck<SuitedCard, dynamic>(
-                        value: 'completed',
-                        values: state.value.completedCards,
-                      ),
-                    ],
-                  ),
+                SizedBox(width: spacing),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 40,
+                  children: [
+                    CardDeck<SuitedCard, dynamic>.flipped(
+                      value: 'deck',
+                      values: state.value.deck,
+                      onCardPressed: (_) => state.value = state.value.withDraw(),
+                    ),
+                    CardDeck<SuitedCard, dynamic>(
+                      value: 'completed',
+                      values: state.value.completedCards,
+                    ),
+                  ],
                 ),
               ],
             ),

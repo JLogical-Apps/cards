@@ -10,11 +10,11 @@ extension ConstraintsExtensions on BoxConstraints {
     required int maxCols,
     required double spacing,
   }) {
-    final availableHorizontalSpace = maxWidth - (maxRows - 1) * spacing;
-    final horizontalMultiplier = (availableHorizontalSpace / maxRows) / 64;
+    final availableHorizontalSpace = maxWidth - (maxCols - 1) * spacing;
+    final horizontalMultiplier = (availableHorizontalSpace / maxCols) / 64;
 
-    final availableVerticalSpace = maxHeight - (maxCols - 1) * spacing;
-    final verticalMultiplier = (availableVerticalSpace / maxCols) / 89;
+    final availableVerticalSpace = maxHeight - (maxRows - 1) * spacing;
+    final verticalMultiplier = (availableVerticalSpace / maxRows) / 89;
 
     return min(horizontalMultiplier, verticalMultiplier);
   }
