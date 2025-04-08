@@ -6,8 +6,8 @@ extension ConstraintsExtensions on BoxConstraints {
   Axis get largestAxis => maxWidth > maxHeight ? Axis.horizontal : Axis.vertical;
 
   double findCardSizeMultiplier({
-    required int maxRows,
-    required int maxCols,
+    required double maxRows,
+    required double maxCols,
     required double spacing,
   }) {
     final availableHorizontalSpace = maxWidth - (maxCols - 1) * spacing;

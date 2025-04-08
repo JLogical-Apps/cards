@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/game_view.dart';
+import 'package:solitaire/games/free_cell.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
 import 'package:solitaire/games/solitaire.dart';
 import 'package:utils/utils.dart';
@@ -22,6 +23,7 @@ class HomePage extends HookWidget {
       'Golf Solitaire': GolfSolitaire(),
       'Solitaire (Easy)': Solitaire(drawAmount: 1),
       'Solitaire (Hard)': Solitaire(drawAmount: 3),
+      'Free Cell': FreeCell(),
     };
     return Scaffold(
       body: SafeArea(
