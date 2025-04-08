@@ -324,6 +324,7 @@ class Solitaire extends HookWidget {
             child: CardDeck<SuitedCard, dynamic>.flipped(
               value: 'deck',
               values: state.value.deck,
+              basePriority: 100,
             ),
           );
           final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
@@ -334,6 +335,7 @@ class Solitaire extends HookWidget {
             canMoveCardHere: (_) => false,
             onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
             canGrab: true,
+            basePriority: 100,
           );
 
           final completedDecks = state.value.completedCards.entries
@@ -342,6 +344,7 @@ class Solitaire extends HookWidget {
                     values: entry.value,
                     canGrab: true,
                     onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                    basePriority: 100,
                   ))
               .toList();
 

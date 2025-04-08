@@ -639,6 +639,7 @@ class FreeCell extends HookWidget {
                               state.value = newState;
                             }
                           },
+                          basePriority: 100,
                         ),
                       ),
                       SizedBox.square(dimension: spacing),
@@ -662,6 +663,7 @@ class FreeCell extends HookWidget {
                                 state.value = newState;
                               }
                             },
+                            basePriority: 100,
                           )),
                     ],
                   ),

@@ -126,10 +126,12 @@ class GolfSolitaire extends HookWidget {
                       value: 'deck',
                       values: state.value.deck,
                       onCardPressed: (_) => state.value = state.value.withDraw(),
+                      basePriority: 100,
                     ),
                     CardDeck<SuitedCard, dynamic>(
                       value: 'completed',
                       values: state.value.completedCards,
+                      basePriority: 100,
                     ),
                   ],
                 ),

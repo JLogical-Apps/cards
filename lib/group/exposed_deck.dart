@@ -17,6 +17,7 @@ class ExposedCardDeck<T extends Object, G> extends CardLinearGroup<T, G> {
     super.canMoveCardHere,
     super.onCardMovedHere,
     super.isCardFlipped,
+    super.basePriority = 0,
     bool canGrab = false,
   }) : super(cardOffset: Offset.zero, maxGrabStackSize: canGrab ? 1 : 0);
 

@@ -35,13 +35,16 @@ class CardScaffold extends HookWidget {
 
     final startTimeState = useState(DateTime.now());
     final currentTimeState = useState(DateTime.now());
-    useStream(Stream.periodic(
-      Duration(milliseconds: 480),
-      (_) {
-        if (!isVictory) {
-          currentTimeState.value = DateTime.now();
-        }
-      },
+    useStream(useMemoized(
+      () => Stream.periodic(
+        Duration(milliseconds: 480),
+        (_) {
+          if (!isVictory) {
+            currentTimeState.value = DateTime.now();
+          }
+        },
+      ),
+      [isVictory],
     ));
 
     final confettiController = useMemoized(() => ConfettiController(duration: Duration(milliseconds: 50))..play());
