@@ -330,7 +330,7 @@ class Solitaire extends HookWidget {
             value: 'revealed-deck',
             values: state.value.revealedDeck,
             amountExposed: drawAmount,
-            overlayOffset: Offset(0, 30),
+            overlayOffset: Offset(0, 1) * cardOffset,
             canMoveCardHere: (_) => false,
             onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
             canGrab: true,
