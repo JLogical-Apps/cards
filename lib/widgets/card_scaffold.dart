@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/home_page.dart';
+import 'package:solitaire/utils/duration_extensions.dart';
 
 class CardScaffold extends HookWidget {
   final Widget Function(BuildContext, BoxConstraints) builder;
@@ -30,6 +31,17 @@ class CardScaffold extends HookWidget {
   Widget build(BuildContext context) {
     final cardGameContext = context.watch<CardGameContext?>();
     final isPreview = cardGameContext?.isPreview ?? false;
+
+    final startTimeState = useState(DateTime.now());
+    final currentTimeState = useState(DateTime.now());
+    useStream(Stream.periodic(
+      Duration(milliseconds: 480),
+      (_) {
+        if (!isVictory) {
+          currentTimeState.value = DateTime.now();
+        }
+      },
+    ));
 
     final confettiController = useMemoized(() => ConfettiController(duration: Duration(milliseconds: 50))..play());
     useEffect(() => () => confettiController.dispose(), []);
@@ -79,6 +91,7 @@ class CardScaffold extends HookWidget {
                                     title: Text('New Game'),
                                     leading: Icon(Icons.star_border),
                                     onPressed: (context) {
+                                      startTimeState.value = DateTime.now();
                                       onNewGame();
                                       Navigator.of(context).pop();
                                     },
@@ -87,6 +100,7 @@ class CardScaffold extends HookWidget {
                                     title: Text('Restart Game'),
                                     leading: Icon(Icons.restart_alt),
                                     onPressed: (_) {
+                                      startTimeState.value = DateTime.now();
                                       onRestart();
                                       Navigator.of(context).pop();
                                     },
@@ -102,6 +116,10 @@ class CardScaffold extends HookWidget {
                             },
                             child: Icon(Icons.menu),
                           ),
+                        ),
+                        Text(
+                          currentTimeState.value.difference(startTimeState.value).format(),
+                          style: TextStyle(fontSize: 16),
                         ),
                         Tooltip(
                           message: 'Undo',
@@ -123,7 +141,7 @@ class CardScaffold extends HookWidget {
           child: ConfettiWidget(
             confettiController: confettiController,
             blastDirectionality: BlastDirectionality.explosive,
-            emissionFrequency: 0.04,
+            emissionFrequency: 0.02,
             numberOfParticles: 50,
             maxBlastForce: 100,
             minBlastForce: 60,
