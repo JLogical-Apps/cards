@@ -308,7 +308,7 @@ class Solitaire extends HookWidget {
         builder: (context, constraints, gameKey) {
           final axis = constraints.largestAxis;
           final minSize = constraints.smallest.longestSide;
-          final spacing = minSize / 60;
+          final spacing = minSize / 100;
 
           final sizeMultiplier = constraints.findCardSizeMultiplier(
             maxRows: axis == Axis.horizontal ? 4 : 7,
