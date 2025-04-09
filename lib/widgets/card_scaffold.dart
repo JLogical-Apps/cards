@@ -9,6 +9,7 @@ import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/home_page.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
+import 'package:utils/utils.dart';
 
 class CardScaffold extends HookWidget {
   final Widget Function(BuildContext, BoxConstraints) builder;
@@ -35,11 +36,12 @@ class CardScaffold extends HookWidget {
 
     final startTimeState = useState(DateTime.now());
     final currentTimeState = useState(DateTime.now());
-    useStream(useMemoized(
+
+    useListen(useMemoized(
       () => Stream.periodic(
         Duration(milliseconds: 480),
         (_) {
-          if (!isVictory) {
+          if (!isVictory && !isPreview) {
             currentTimeState.value = DateTime.now();
           }
         },
