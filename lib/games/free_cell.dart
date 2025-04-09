@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -593,7 +594,7 @@ class FreeCell extends HookWidget {
 
           return CardGame<SuitedCard, GroupValue>(
             gameKey: gameKey,
-            style: deckCardStyle(sizeMultiplier: sizeMultiplier),
+            style: playingCardStyle(sizeMultiplier: sizeMultiplier),
             children: [
               Flex(
                 direction: axis.inverted,
