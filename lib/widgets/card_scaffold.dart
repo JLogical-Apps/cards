@@ -80,40 +80,43 @@ class CardScaffold extends HookWidget {
                           children: [
                             Tooltip(
                               message: 'Menu',
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: () async {
-                                  await showAdaptiveActionSheet(
-                                    context: context,
-                                    actions: [
-                                      BottomSheetAction(
-                                        title: Text('New Game'),
-                                        leading: Icon(Icons.star_border),
-                                        onPressed: (context) {
-                                          startTimeState.value = DateTime.now();
-                                          onNewGame();
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      BottomSheetAction(
-                                        title: Text('Restart Game'),
-                                        leading: Icon(Icons.restart_alt),
-                                        onPressed: (_) {
-                                          startTimeState.value = DateTime.now();
-                                          onRestart();
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      BottomSheetAction(
-                                        title: Text('Close'),
-                                        leading: Icon(Icons.close),
-                                        onPressed: (_) => Navigator.of(context)
-                                            .pushReplacement(MaterialPageRoute(builder: (_) => HomePage())),
-                                      ),
-                                    ],
+                              child: MenuAnchor(
+                                style: MenuStyle(
+                                  padding: WidgetStateProperty.all(EdgeInsets.zero),
+                                ),
+                                builder: (context, controller, child) {
+                                  return ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white.withValues(alpha: 0.5),
+                                    ),
+                                    onPressed: () => controller.open(),
+                                    child: Icon(Icons.menu),
                                   );
                                 },
-                                child: Icon(Icons.menu),
+                                menuChildren: [
+                                  MenuItemButton(
+                                    leadingIcon: Icon(Icons.star_border),
+                                    onPressed: () {
+                                      startTimeState.value = DateTime.now();
+                                      onNewGame();
+                                    },
+                                    child: Text('New Game'),
+                                  ),
+                                  MenuItemButton(
+                                    leadingIcon: Icon(Icons.restart_alt),
+                                    onPressed: () {
+                                      startTimeState.value = DateTime.now();
+                                      onRestart();
+                                    },
+                                    child: Text('Restart Game'),
+                                  ),
+                                  MenuItemButton(
+                                    leadingIcon: Icon(Icons.close),
+                                    onPressed: () => Navigator.of(context)
+                                        .pushReplacement(MaterialPageRoute(builder: (_) => HomePage())),
+                                    child: Text('Close'),
+                                  ),
+                                ],
                               ),
                             ),
                             Tooltip(
