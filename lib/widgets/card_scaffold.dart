@@ -143,7 +143,10 @@ class CardScaffold extends HookWidget {
                     bottom: axis == Axis.vertical,
                     child: Padding(
                       padding: EdgeInsets.all(4),
-                      child: LayoutBuilder(builder: builder),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 1080),
+                        child: LayoutBuilder(builder: builder),
+                      ),
                     ),
                   ),
                 ),
