@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
@@ -10,7 +11,7 @@ import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
 
 // Abstract base class for all group values
-abstract class GroupValue {
+abstract class GroupValue extends Equatable {
   const GroupValue();
 }
 
@@ -21,15 +22,7 @@ class TableauGroupValue extends GroupValue {
   const TableauGroupValue(this.columnIndex);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TableauGroupValue && runtimeType == other.runtimeType && columnIndex == other.columnIndex;
-
-  @override
-  int get hashCode => columnIndex.hashCode;
-
-  @override
-  String toString() => 'Tableau($columnIndex)';
+  List<Object?> get props => [columnIndex];
 }
 
 // Free cell group value
@@ -39,15 +32,7 @@ class FreeCellGroupValue extends GroupValue {
   const FreeCellGroupValue(this.cellIndex);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FreeCellGroupValue && runtimeType == other.runtimeType && cellIndex == other.cellIndex;
-
-  @override
-  int get hashCode => cellIndex.hashCode;
-
-  @override
-  String toString() => 'FreeCell($cellIndex)';
+  List<Object?> get props => [cellIndex];
 }
 
 // Foundation group value
@@ -57,14 +42,7 @@ class FoundationGroupValue extends GroupValue {
   const FoundationGroupValue(this.suit);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is FoundationGroupValue && runtimeType == other.runtimeType && suit == other.suit;
-
-  @override
-  int get hashCode => suit.hashCode;
-
-  @override
-  String toString() => 'Foundation($suit)';
+  List<Object?> get props => [suit];
 }
 
 class FreeCellState {
@@ -600,7 +578,7 @@ class FreeCell extends HookWidget {
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
-        builder: (context, constraints) {
+        builder: (context, constraints, gameKey) {
           final axis = constraints.largestAxis;
           final minSize = constraints.smallest.longestSide;
           final spacing = minSize / 60;
@@ -614,6 +592,7 @@ class FreeCell extends HookWidget {
           final cardOffset = sizeMultiplier * 25;
 
           return CardGame<SuitedCard, GroupValue>(
+            gameKey: gameKey,
             style: deckCardStyle(sizeMultiplier: sizeMultiplier),
             children: [
               Flex(
@@ -639,7 +618,6 @@ class FreeCell extends HookWidget {
                               state.value = newState;
                             }
                           },
-                          basePriority: 100,
                         ),
                       ),
                       SizedBox.square(dimension: spacing),
@@ -663,7 +641,6 @@ class FreeCell extends HookWidget {
                                 state.value = newState;
                               }
                             },
-                            basePriority: 100,
                           )),
                     ],
                   ),

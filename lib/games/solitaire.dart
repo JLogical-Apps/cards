@@ -305,13 +305,13 @@ class Solitaire extends HookWidget {
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
-        builder: (context, constraints) {
+        builder: (context, constraints, gameKey) {
           final axis = constraints.largestAxis;
           final minSize = constraints.smallest.longestSide;
           final spacing = minSize / 60;
 
           final sizeMultiplier = constraints.findCardSizeMultiplier(
-            maxRows: axis == Axis.horizontal ? 2 : 7,
+            maxRows: axis == Axis.horizontal ? 4 : 7,
             maxCols: axis == Axis.horizontal ? 10 : 2,
             spacing: spacing,
           );
@@ -324,7 +324,6 @@ class Solitaire extends HookWidget {
             child: CardDeck<SuitedCard, dynamic>.flipped(
               value: 'deck',
               values: state.value.deck,
-              basePriority: 100,
             ),
           );
           final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
@@ -335,7 +334,6 @@ class Solitaire extends HookWidget {
             canMoveCardHere: (_) => false,
             onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
             canGrab: true,
-            basePriority: 100,
           );
 
           final completedDecks = state.value.completedCards.entries
@@ -344,18 +342,18 @@ class Solitaire extends HookWidget {
                     values: entry.value,
                     canGrab: true,
                     onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
-                    basePriority: 100,
                   ))
               .toList();
 
           return CardGame(
+            gameKey: gameKey,
             style: deckCardStyle(sizeMultiplier: sizeMultiplier),
             children: [
               Row(
                 children: [
                   if (axis == Axis.horizontal) ...[
                     Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       spacing: spacing,
                       children: [
                         hiddenDeck,
@@ -408,17 +406,9 @@ class Solitaire extends HookWidget {
                       ],
                     )
                   else
-                    Row(
+                    Column(
                       spacing: spacing,
-                      children: [
-                        ...[
-                          completedDecks.take(2),
-                          completedDecks.skip(2),
-                        ].map((decks) => Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: decks.toList(),
-                            )),
-                      ],
+                      children: completedDecks,
                     ),
                 ],
               ),

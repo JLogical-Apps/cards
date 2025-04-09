@@ -60,7 +60,7 @@ class HomePage extends HookWidget {
                                     IgnorePointer(child: game),
                                     Positioned.fill(
                                       child: ColoredBox(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color: Colors.white.withValues(alpha: 0.8),
                                         child: InkWell(
                                           onTap: () => Navigator.of(context).pushReplacement(
                                               MaterialPageRoute(builder: (_) => GameView(cardGame: game))),

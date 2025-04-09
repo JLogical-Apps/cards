@@ -74,7 +74,7 @@ class GolfSolitaire extends HookWidget {
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
-      builder: (context, constraints) {
+      builder: (context, constraints, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;
         final spacing = minSize / 100;
@@ -88,6 +88,7 @@ class GolfSolitaire extends HookWidget {
         final cardOffset = sizeMultiplier * 25;
 
         return CardGame<SuitedCard, dynamic>(
+          gameKey: gameKey,
           style: deckCardStyle(sizeMultiplier: sizeMultiplier),
           children: [
             Row(
@@ -126,12 +127,10 @@ class GolfSolitaire extends HookWidget {
                       value: 'deck',
                       values: state.value.deck,
                       onCardPressed: (_) => state.value = state.value.withDraw(),
-                      basePriority: 100,
                     ),
                     CardDeck<SuitedCard, dynamic>(
                       value: 'completed',
                       values: state.value.completedCards,
-                      basePriority: 100,
                     ),
                   ],
                 ),

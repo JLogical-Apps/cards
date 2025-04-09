@@ -12,7 +12,7 @@ import 'package:solitaire/utils/duration_extensions.dart';
 import 'package:utils/utils.dart';
 
 class CardScaffold extends HookWidget {
-  final Widget Function(BuildContext, BoxConstraints) builder;
+  final Widget Function(BuildContext, BoxConstraints, Object gameKey) builder;
 
   final Function() onNewGame;
   final Function() onRestart;
@@ -145,7 +145,9 @@ class CardScaffold extends HookWidget {
                       padding: EdgeInsets.all(4),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: 1080),
-                        child: LayoutBuilder(builder: builder),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => builder(context, constraints, startTimeState.value),
+                        ),
                       ),
                     ),
                   ),
