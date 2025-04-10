@@ -63,14 +63,26 @@ class FreeCellState {
     required this.history,
   });
 
-  static FreeCellState getInitialState({required int freeCellCount}) {
+  static FreeCellState getInitialState({required int freeCellCount, required bool acesAtBottom}) {
     var deck = SuitedCard.deck.shuffled();
+
+    final aces = deck.where((card) => card.value == AceSuitedCardValue()).toList();
+    if (acesAtBottom) {
+      deck = deck.where((card) => card.value != AceSuitedCardValue()).toList();
+    }
 
     // In Free Cell, we start with 8 columns (tableau)
     final tableauCards = List.generate(8, (i) {
       final cardsPerColumn = i < 4 ? 7 : 6; // First 4 columns have 7 cards, last 4 have 6
-      final column = deck.take(cardsPerColumn).toList();
-      deck = deck.skip(cardsPerColumn).toList();
+      final cardsToTake = cardsPerColumn - (acesAtBottom && i < 4 ? 1 : 0);
+
+      final column = deck.take(cardsToTake).toList();
+      deck = deck.skip(cardsToTake).toList();
+
+      if (acesAtBottom && i < 4 && aces.isNotEmpty) {
+        column.insert(0, aces.removeAt(0));
+      }
+
       return column;
     });
 
@@ -572,9 +584,9 @@ class FreeCell extends HookWidget {
   FreeCellState get initialState => FreeCellState.getInitialState(
         freeCellCount: switch (difficulty) {
           Difficulty.classic => 4,
-          Difficulty.royal => 3,
-          Difficulty.ace => 2,
+          Difficulty.royal || Difficulty.ace => 3,
         },
+        acesAtBottom: difficulty == Difficulty.ace,
       );
 
   @override

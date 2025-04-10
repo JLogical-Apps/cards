@@ -36,17 +36,34 @@ class SolitaireState {
     required this.history,
   });
 
-  static SolitaireState getInitialState(int drawAmount) {
+  static SolitaireState getInitialState({required int drawAmount, required bool acesAtBottom}) {
     var deck = SuitedCard.deck.shuffled();
 
+    final aces = deck.where((card) => card.value == AceSuitedCardValue()).toList();
+    if (acesAtBottom) {
+      deck = deck.where((card) => card.value != AceSuitedCardValue()).toList();
+    }
+
     final hiddenCards = List.generate(7, (i) {
-      final column = deck.take(i).toList();
-      deck = deck.skip(i).toList();
+      List<SuitedCard> column = [];
+
+      if (acesAtBottom && i >= 3 && i < 7 && aces.isNotEmpty) {
+        column.add(aces.removeAt(0));
+        column.addAll(deck.take(i-1));
+        deck = deck.skip(i-1).toList();
+      } else {
+        column = deck.take(i).toList();
+        deck = deck.skip(i).toList();
+      }
+
       return column;
     });
 
-    final revealedCards = deck.take(7).map((card) => [card]).toList();
-    deck = deck.skip(7).toList();
+    final revealedCards = List.generate(7, (i) {
+      final card = deck.first;
+      deck = deck.skip(1).toList();
+      return [card];
+    });
 
     return SolitaireState(
       hiddenCards: hiddenCards,
@@ -298,20 +315,24 @@ class Solitaire extends HookWidget {
 
   int get drawAmount => switch (difficulty) {
         Difficulty.classic => 1,
-        Difficulty.royal => 3,
-        Difficulty.ace => 5,
+        Difficulty.royal || Difficulty.ace => 3,
       };
+
+  SolitaireState get initialState => SolitaireState.getInitialState(
+        drawAmount: drawAmount,
+        acesAtBottom: difficulty == Difficulty.ace,
+      );
 
   @override
   Widget build(BuildContext context) {
-    final state = useState(SolitaireState.getInitialState(drawAmount));
+    final state = useState(initialState);
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
-        onNewGame: () => state.value = SolitaireState.getInitialState(drawAmount),
+        onNewGame: () => state.value = initialState,
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,

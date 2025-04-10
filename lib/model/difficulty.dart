@@ -23,8 +23,8 @@ enum Difficulty {
           },
         Difficulty.ace => switch (game) {
             Game.golf => 'One card is automatically drawn at the start, and Kings cannot wrap to Aces.',
-            Game.klondike => 'Cards are drawn five at a time.',
-            Game.freeCell => 'Play with two fewer free cells.',
+            Game.klondike => 'Cards are drawn three at a time and all aces are buried at the bottom of the last four tableaus.',
+            Game.freeCell => 'Play with one fewer free cell and all aces are buried at the bottom of the first four tableaus.',
           },
       };
 
