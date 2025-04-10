@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
@@ -62,7 +63,7 @@ class FreeCellState {
     required this.history,
   });
 
-  static FreeCellState getInitialState() {
+  static FreeCellState getInitialState({required int freeCellCount}) {
     var deck = SuitedCard.deck.shuffled();
 
     // In Free Cell, we start with 8 columns (tableau)
@@ -75,7 +76,7 @@ class FreeCellState {
 
     return FreeCellState(
       tableauCards: tableauCards,
-      freeCells: List.filled(4, null),
+      freeCells: List.filled(freeCellCount, null),
       foundationCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
       history: [],
       canAutoMove: true,
@@ -564,18 +565,28 @@ class FreeCellState {
 }
 
 class FreeCell extends HookWidget {
-  const FreeCell({super.key});
+  final Difficulty difficulty;
+
+  const FreeCell({super.key, required this.difficulty});
+
+  FreeCellState get initialState => FreeCellState.getInitialState(
+        freeCellCount: switch (difficulty) {
+          Difficulty.classic => 4,
+          Difficulty.royal => 3,
+          Difficulty.ace => 2,
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
-    final state = useState(FreeCellState.getInitialState());
+    final state = useState(initialState);
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
-        onNewGame: () => state.value = FreeCellState.getInitialState(),
+        onNewGame: () => state.value = initialState,
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
@@ -603,23 +614,24 @@ class FreeCell extends HookWidget {
                     direction: axis,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ...List.generate(
-                        4,
-                        (i) => CardDeck<SuitedCard, GroupValue>(
-                          value: FreeCellGroupValue(i),
-                          values: state.value.freeCells[i] == null ? [] : [state.value.freeCells[i]!],
-                          canGrab: true,
-                          canMoveCardHere: (move) => move.cardValues.length == 1 && state.value.freeCells[i] == null,
-                          onCardMovedHere: (move) => state.value =
-                              state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i)),
-                          onCardPressed: (card) {
-                            // Use auto-move logic for free cell clicks
-                            final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
-                            if (newState != null) {
-                              state.value = newState;
-                            }
-                          },
-                        ),
+                      ...state.value.freeCells.mapIndexed((i, card) => CardDeck<SuitedCard, GroupValue>(
+                            value: FreeCellGroupValue(i),
+                            values: card == null ? [] : [card],
+                            canGrab: true,
+                            canMoveCardHere: (move) => move.cardValues.length == 1 && card == null,
+                            onCardMovedHere: (move) => state.value =
+                                state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i)),
+                            onCardPressed: (card) {
+                              // Use auto-move logic for free cell clicks
+                              final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
+                              if (newState != null) {
+                                state.value = newState;
+                              }
+                            },
+                          )),
+                      ...List.filled(
+                        4 - state.value.freeCells.length,
+                        SizedBox.fromSize(size: Size(69, 93) * sizeMultiplier),
                       ),
                       SizedBox.square(dimension: spacing),
                       ...state.value.foundationCards.entries.map<Widget>((entry) => CardDeck<SuitedCard, GroupValue>(

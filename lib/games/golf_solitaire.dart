@@ -2,6 +2,7 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
@@ -11,6 +12,7 @@ class GolfSolitaireState {
   final List<List<SuitedCard>> cards;
   final List<SuitedCard> deck;
   final List<SuitedCard> completedCards;
+  final bool canRollover;
 
   final List<GolfSolitaireState> history;
 
@@ -18,10 +20,11 @@ class GolfSolitaireState {
     required this.cards,
     required this.deck,
     required this.completedCards,
+    required this.canRollover,
     required this.history,
   });
 
-  static GolfSolitaireState get initialState {
+  static GolfSolitaireState getInitialState({required bool startWithDraw, required bool canRollover}) {
     var deck = SuitedCard.deck.shuffled();
 
     final cards = List.generate(7, (i) {
@@ -30,22 +33,32 @@ class GolfSolitaireState {
       return column;
     });
 
+    var completedCards = <SuitedCard>[];
+    if (startWithDraw) {
+      completedCards.add(deck.first);
+      deck = deck.skip(1).toList();
+    }
+
     return GolfSolitaireState(
       cards: cards,
       deck: deck,
-      completedCards: [],
+      completedCards: completedCards,
+      canRollover: canRollover,
       history: [],
     );
   }
 
-  bool canSelect(SuitedCard card) {
-    return completedCards.isEmpty || SuitedCardDistanceMapper.rollover.getDistance(completedCards.last, card) == 1;
-  }
+  SuitedCardDistanceMapper get distanceMapper =>
+      canRollover ? SuitedCardDistanceMapper.rollover : SuitedCardDistanceMapper.aceToKing;
+
+  bool canSelect(SuitedCard card) =>
+      completedCards.isEmpty || distanceMapper.getDistance(completedCards.last, card) == 1;
 
   GolfSolitaireState withSelection(SuitedCard card) => GolfSolitaireState(
         cards: cards.map((column) => [...column]..remove(card)).toList(),
         deck: deck,
         completedCards: completedCards + [card],
+        canRollover: canRollover,
         history: history + [this],
       );
 
@@ -55,6 +68,7 @@ class GolfSolitaireState {
         cards: cards,
         deck: deck.sublist(0, deck.length - 1),
         completedCards: completedCards + [deck.last],
+        canRollover: canRollover,
         history: history + [this],
       );
 
@@ -64,14 +78,21 @@ class GolfSolitaireState {
 }
 
 class GolfSolitaire extends HookWidget {
-  const GolfSolitaire({super.key});
+  final Difficulty difficulty;
+
+  const GolfSolitaire({super.key, required this.difficulty});
+
+  GolfSolitaireState get initialState => GolfSolitaireState.getInitialState(
+        startWithDraw: difficulty.index >= Difficulty.royal.index,
+        canRollover: difficulty != Difficulty.ace,
+      );
 
   @override
   Widget build(BuildContext context) {
-    final state = useState(GolfSolitaireState.initialState);
+    final state = useState(initialState);
 
     return CardScaffold(
-      onNewGame: () => state.value = GolfSolitaireState.initialState,
+      onNewGame: () => state.value = initialState,
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,

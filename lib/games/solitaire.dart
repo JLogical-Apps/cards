@@ -11,6 +11,8 @@ import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
 
+import '../model/difficulty.dart';
+
 class SolitaireState {
   final int drawAmount;
 
@@ -289,9 +291,15 @@ class SolitaireState {
 }
 
 class Solitaire extends HookWidget {
-  final int drawAmount;
+  final Difficulty difficulty;
 
-  const Solitaire({super.key, this.drawAmount = 1});
+  const Solitaire({super.key, required this.difficulty});
+
+  int get drawAmount => switch (difficulty) {
+        Difficulty.classic => 1,
+        Difficulty.royal => 3,
+        Difficulty.ace => 5,
+      };
 
   @override
   Widget build(BuildContext context) {
