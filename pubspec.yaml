@@ -32,6 +32,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.3
   flutter_lints: ^5.0.0
 
 flutter:
@@ -39,3 +40,11 @@ flutter:
 
   assets:
     - assets/
+
+flutter_launcher_icons: # dart run flutter_launcher_icons
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/cards.png"
+  min_sdk_android: 21
+  web:
+    generate: true
