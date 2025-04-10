@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:solitaire/model/game.dart';
 
+@JsonEnum()
 enum Difficulty {
   classic,
   royal,

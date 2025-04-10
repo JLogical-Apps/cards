@@ -18,9 +18,11 @@ dependencies:
   flutter_svg: ^2.0.17
   hooks_riverpod: ^2.6.1
   intl: ^0.18.0
+  json_annotation: ^4.9.0
   material_symbols_icons: ^4.2811.0
   provider: ^6.1.2
   riverpod_annotation: ^2.6.1
+  shared_preferences: ^2.5.3
   smooth_page_indicator: ^1.2.0+3
 
   utils:
@@ -39,6 +41,7 @@ dev_dependencies:
   custom_lint: ^0.7.5
   flutter_launcher_icons: ^0.14.3
   flutter_lints: ^5.0.0
+  json_serializable: ^6.8.0
   riverpod_generator: ^2.6.5
   riverpod_lint: ^2.6.5
 
