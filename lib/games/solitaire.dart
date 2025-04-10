@@ -5,13 +5,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/group/exposed_deck.dart';
+import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/game.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
-
-import '../model/difficulty.dart';
 
 class SolitaireState {
   final int drawAmount;
@@ -49,8 +49,8 @@ class SolitaireState {
 
       if (acesAtBottom && i >= 3 && i < 7 && aces.isNotEmpty) {
         column.add(aces.removeAt(0));
-        column.addAll(deck.take(i-1));
-        deck = deck.skip(i-1).toList();
+        column.addAll(deck.take(i - 1));
+        deck = deck.skip(i - 1).toList();
       } else {
         column = deck.take(i).toList();
         deck = deck.skip(i).toList();
@@ -332,6 +332,8 @@ class Solitaire extends HookWidget {
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
+        game: Game.klondike,
+        difficulty: difficulty,
         onNewGame: () => state.value = initialState,
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),

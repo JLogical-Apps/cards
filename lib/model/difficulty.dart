@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-import 'game.dart';
+import 'package:solitaire/model/game.dart';
 
 enum Difficulty {
   classic,
@@ -23,8 +22,10 @@ enum Difficulty {
           },
         Difficulty.ace => switch (game) {
             Game.golf => 'One card is automatically drawn at the start, and Kings cannot wrap to Aces.',
-            Game.klondike => 'Cards are drawn three at a time and all aces are buried at the bottom of the last four tableaus.',
-            Game.freeCell => 'Play with one fewer free cell and all aces are buried at the bottom of the first four tableaus.',
+            Game.klondike =>
+              'Cards are drawn three at a time and all aces are buried at the bottom of the last four tableaus.',
+            Game.freeCell =>
+              'Play with one fewer free cell and all aces are buried at the bottom of the first four tableaus.',
           },
       };
 

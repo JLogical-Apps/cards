@@ -2,27 +2,30 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' hide Provider;
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/game_view.dart';
 import 'package:solitaire/games/free_cell.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
 import 'package:solitaire/games/solitaire.dart';
+import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/game.dart';
+import 'package:solitaire/model/game_state.dart';
+import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:utils/utils.dart';
-
-import 'context/card_game_context.dart';
-import 'model/difficulty.dart';
-import 'model/game.dart';
 
 typedef GameDetails = ({
   Widget Function(Difficulty) builder,
   Difficulty difficulty,
   Function(Difficulty) onChangeDifficulty,
+  GameState? gameState,
 });
 
-class HomePage extends HookWidget {
+class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
   Map<Game, Widget Function(Difficulty)> get gameBuilders => {
@@ -32,13 +35,16 @@ class HomePage extends HookWidget {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final saveState = ref.watch(saveStateNotifierProvider).valueOrNull;
+
     final difficultyByGameState = useState(gameBuilders.map((game, _) => MapEntry(game, Difficulty.classic)));
     final gameDetails = gameBuilders.map((game, builder) => MapEntry(game, (
           difficulty: difficultyByGameState.value[game]!,
           onChangeDifficulty: (Difficulty difficulty) =>
               difficultyByGameState.value = {...difficultyByGameState.value, game: difficulty},
           builder: builder,
+          gameState: saveState?.gameStates[game],
         )));
 
     return Scaffold(
@@ -62,7 +68,7 @@ class HomePage extends HookWidget {
       key: ValueKey('horizontal'),
       builder: (context) {
         final selectedGameState = useState(Game.golf);
-        final (:difficulty, :onChangeDifficulty, :builder) = gameDetails[selectedGameState.value]!;
+        final (:difficulty, :onChangeDifficulty, :builder, :gameState) = gameDetails[selectedGameState.value]!;
 
         return Row(
           children: [
@@ -81,7 +87,8 @@ class HomePage extends HookWidget {
                       ),
                   itemCount: gameDetails.length,
                   itemBuilder: (_, i) {
-                    final (game, (:difficulty, :onChangeDifficulty, :builder)) = gameDetails.entryRecords.toList()[i];
+                    final (game, (:difficulty, :onChangeDifficulty, :builder, :gameState)) =
+                        gameDetails.entryRecords.toList()[i];
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Material(
@@ -135,6 +142,7 @@ class HomePage extends HookWidget {
                       selectedDifficulty: difficulty,
                       onChangeDifficulty: onChangeDifficulty,
                       game: selectedGameState.value,
+                      gameState: gameState,
                     ),
                     ElevatedButton(
                       onPressed: () => context.pushReplacement(() => GameView(cardGame: builder(difficulty))),
@@ -173,7 +181,7 @@ class HomePage extends HookWidget {
                   controller: pageController,
                   onPageChanged: (page) => pageState.value = page,
                   children: gameDetails.mapToIterable((game, details) {
-                    final (:difficulty, :onChangeDifficulty, :builder) = details;
+                    final (:difficulty, :onChangeDifficulty, :builder, :gameState) = details;
 
                     return Container(
                       decoration: BoxDecoration(
@@ -206,6 +214,7 @@ class HomePage extends HookWidget {
                                       selectedDifficulty: difficulty,
                                       onChangeDifficulty: onChangeDifficulty,
                                       game: game,
+                                      gameState: gameState,
                                     ),
                                     ElevatedButton(
                                       onPressed: () =>
@@ -248,6 +257,7 @@ class HomePage extends HookWidget {
     required Difficulty selectedDifficulty,
     required Function(Difficulty) onChangeDifficulty,
     required Game game,
+    required GameState? gameState,
   }) {
     return Column(
       children: [
@@ -257,7 +267,10 @@ class HomePage extends HookWidget {
           children: Difficulty.values
               .map((difficulty) => ChoiceChip(
                     label: Text(difficulty.title),
-                    avatar: Icon(difficulty.icon),
+                    avatar: Icon(
+                      difficulty.icon,
+                      fill: gameState?[difficulty]?.gamesWon != null ? 1 : 0,
+                    ),
                     selected: difficulty == selectedDifficulty,
                     onSelected: (_) => onChangeDifficulty(difficulty),
                   ))

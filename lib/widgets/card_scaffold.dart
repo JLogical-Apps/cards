@@ -4,14 +4,21 @@ import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/home_page.dart';
+import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/game.dart';
+import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
 import 'package:utils/utils.dart';
 
-class CardScaffold extends HookWidget {
+class CardScaffold extends HookConsumerWidget {
+  final Game game;
+  final Difficulty difficulty;
+
   final Widget Function(BuildContext, BoxConstraints, Object gameKey) builder;
 
   final Function() onNewGame;
@@ -22,6 +29,8 @@ class CardScaffold extends HookWidget {
 
   const CardScaffold({
     super.key,
+    required this.game,
+    required this.difficulty,
     required this.builder,
     required this.onNewGame,
     required this.onRestart,
@@ -30,12 +39,23 @@ class CardScaffold extends HookWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cardGameContext = context.watch<CardGameContext?>();
     final isPreview = cardGameContext?.isPreview ?? false;
 
     final startTimeState = useState(DateTime.now());
     final currentTimeState = useState(DateTime.now());
+
+    useEffect(() {
+      if (isVictory) {
+        ref.read(saveStateNotifierProvider.notifier).saveGameCompleted(
+              game: game,
+              difficulty: difficulty,
+              duration: currentTimeState.value.difference(startTimeState.value),
+            );
+      }
+      return null;
+    }, [isVictory]);
 
     useListen(useMemoized(
       () => Stream.periodic(
@@ -125,7 +145,7 @@ class CardScaffold extends HookWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: onUndo,
+                                onPressed: isVictory ? null : onUndo,
                                 child: Icon(Icons.undo),
                               ),
                             ),
@@ -212,7 +232,7 @@ class CardScaffold extends HookWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: onUndo,
+                                onPressed: isVictory ? null : onUndo,
                                 child: Icon(Icons.undo),
                               ),
                             ),

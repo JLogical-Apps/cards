@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/game.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
@@ -598,6 +599,8 @@ class FreeCell extends HookWidget {
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) => state.value = newState,
       child: CardScaffold(
+        game: Game.freeCell,
+        difficulty: difficulty,
         onNewGame: () => state.value = initialState,
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
