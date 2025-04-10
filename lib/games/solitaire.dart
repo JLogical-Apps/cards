@@ -62,10 +62,11 @@ class SolitaireState {
 
   SolitaireState withDrawOrRefresh() {
     return deck.isEmpty
-        ? copyWith(deck: revealedDeck.reversed.toList(), revealedDeck: [])
+        ? copyWith(deck: revealedDeck.reversed.toList(), revealedDeck: [], canAutoMove: true)
         : copyWith(
             deck: deck.sublist(0, max(0, deck.length - drawAmount)),
             revealedDeck: revealedDeck + deck.reversed.take(drawAmount).toList(),
+            canAutoMove: true,
           );
   }
 
