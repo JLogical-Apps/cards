@@ -9,7 +9,10 @@ part 'save_state.g.dart';
 class SaveState {
   final Map<Game, GameState> gameStates;
 
-  const SaveState({required this.gameStates});
+  final Game? lastGamePlayed;
+  final Map<Game, Difficulty> lastPlayedGameDifficulties;
+
+  const SaveState({required this.gameStates, required this.lastGamePlayed, required this.lastPlayedGameDifficulties});
 
   factory SaveState.fromJson(Map<String, dynamic> json) => _$SaveStateFromJson(json);
   Map<String, dynamic> toJson() => _$SaveStateToJson(this);
@@ -21,9 +24,33 @@ class SaveState {
     required Difficulty difficulty,
     required Duration duration,
   }) {
-    return SaveState(gameStates: {
-      ...gameStates,
-      game: getOrDefault(game).withCompleted(difficulty: difficulty, duration: duration),
-    });
+    return copyWith(
+      gameStates: {
+        ...gameStates,
+        game: getOrDefault(game).withCompleted(difficulty: difficulty, duration: duration),
+      },
+    );
+  }
+
+  SaveState withGameStarted({required Game game, required Difficulty difficulty}) {
+    return copyWith(
+      lastGamePlayed: game,
+      lastPlayedGameDifficulties: {
+        ...lastPlayedGameDifficulties,
+        game: difficulty,
+      },
+    );
+  }
+
+  SaveState copyWith({
+    Map<Game, GameState>? gameStates,
+    Game? lastGamePlayed,
+    Map<Game, Difficulty>? lastPlayedGameDifficulties,
+  }) {
+    return SaveState(
+      gameStates: gameStates ?? this.gameStates,
+      lastGamePlayed: lastGamePlayed ?? this.lastGamePlayed,
+      lastPlayedGameDifficulties: lastPlayedGameDifficulties ?? this.lastPlayedGameDifficulties,
+    );
   }
 }

@@ -18,7 +18,7 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     final sharedPreferences = await SharedPreferences.getInstance();
     final saveStateRaw = sharedPreferences.getString(_saveStateKey);
     final saveState = guard(() => saveStateRaw?.mapIfNonNull((raw) => SaveState.fromJson(jsonDecode(raw))));
-    return saveState ?? SaveState(gameStates: {});
+    return saveState ?? SaveState(gameStates: {}, lastGamePlayed: null, lastPlayedGameDifficulties: {});
   }
 
   Future<void> saveGameCompleted({
@@ -27,11 +27,20 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     required Duration duration,
   }) async {
     final saveState = await future;
+    await _saveState(saveState.withGameCompleted(game: game, difficulty: difficulty, duration: duration));
+  }
 
-    final newSaveState = saveState.withGameCompleted(game: game, difficulty: difficulty, duration: duration);
-    state = AsyncValue.data(newSaveState);
+  Future<void> saveGameStarted({
+    required Game game,
+    required Difficulty difficulty,
+  }) async {
+    final saveState = await future;
+    await _saveState(saveState.withGameStarted(game: game, difficulty: difficulty));
+  }
 
-    final raw = jsonEncode(newSaveState.toJson());
+  Future<void> _saveState(SaveState state) async {
+    this.state = AsyncValue.data(state);
+    final raw = jsonEncode(state.toJson());
     final sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.setString(_saveStateKey, raw);
   }

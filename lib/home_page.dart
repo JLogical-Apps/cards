@@ -23,9 +23,10 @@ typedef GameDetails = ({
   Difficulty difficulty,
   Function(Difficulty) onChangeDifficulty,
   GameState? gameState,
+  Function(Game) onStartGame,
 });
 
-class HomePage extends HookConsumerWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   Map<Game, Widget Function(Difficulty)> get gameBuilders => {
@@ -37,38 +38,67 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saveState = ref.watch(saveStateNotifierProvider).valueOrNull;
+    if (saveState == null) {
+      return SizedBox.shrink();
+    }
 
-    final difficultyByGameState = useState(gameBuilders.map((game, _) => MapEntry(game, Difficulty.classic)));
-    final gameDetails = gameBuilders.map((game, builder) => MapEntry(game, (
-          difficulty: difficultyByGameState.value[game]!,
-          onChangeDifficulty: (Difficulty difficulty) =>
-              difficultyByGameState.value = {...difficultyByGameState.value, game: difficulty},
-          builder: builder,
-          gameState: saveState?.gameStates[game],
-        )));
+    return HookBuilder(
+      builder: (context) {
+        final difficultyByGameState = useState(gameBuilders.map((game, _) => MapEntry(
+              game,
+              saveState.lastPlayedGameDifficulties[game] ?? Difficulty.classic,
+            )));
 
-    return Scaffold(
-      body: Provider.value(
-        value: CardGameContext(isPreview: true),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.largestAxis == Axis.horizontal) {
-              return buildHorizontalLayout(context, gameDetails: gameDetails);
-            } else {
-              return buildVerticalLayout(context, gameDetails: gameDetails);
-            }
-          },
-        ),
-      ),
+        final gameDetails = gameBuilders.map((game, builder) => MapEntry(game, (
+              difficulty: difficultyByGameState.value[game]!,
+              onChangeDifficulty: (Difficulty difficulty) =>
+                  difficultyByGameState.value = {...difficultyByGameState.value, game: difficulty},
+              builder: builder,
+              gameState: saveState.gameStates[game],
+              onStartGame: (game) {
+                final difficulty = difficultyByGameState.value[game]!;
+                context.pushReplacement(() => GameView(cardGame: builder(difficulty)));
+                ref.read(saveStateNotifierProvider.notifier).saveGameStarted(game: game, difficulty: difficulty);
+              },
+            )));
+
+        return Scaffold(
+          body: Provider.value(
+            value: CardGameContext(isPreview: true),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.largestAxis == Axis.horizontal) {
+                  return buildHorizontalLayout(
+                    context,
+                    lastGamePlayed: saveState.lastGamePlayed,
+                    gameDetails: gameDetails,
+                  );
+                } else {
+                  return buildVerticalLayout(
+                    context,
+                    lastGamePlayed: saveState.lastGamePlayed,
+                    gameDetails: gameDetails,
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget buildHorizontalLayout(BuildContext context, {required Map<Game, GameDetails> gameDetails}) {
+  Widget buildHorizontalLayout(
+    BuildContext context, {
+    required Game? lastGamePlayed,
+    required Map<Game, GameDetails> gameDetails,
+  }) {
     return HookBuilder(
       key: ValueKey('horizontal'),
       builder: (context) {
-        final selectedGameState = useState(Game.golf);
-        final (:difficulty, :onChangeDifficulty, :builder, :gameState) = gameDetails[selectedGameState.value]!;
+        final selectedGameState = useState(lastGamePlayed ?? Game.golf);
+        final (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame) =
+            gameDetails[selectedGameState.value]!;
 
         return Row(
           children: [
@@ -87,7 +117,7 @@ class HomePage extends HookConsumerWidget {
                       ),
                   itemCount: gameDetails.length,
                   itemBuilder: (_, i) {
-                    final (game, (:difficulty, :onChangeDifficulty, :builder, :gameState)) =
+                    final (game, (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame)) =
                         gameDetails.entryRecords.toList()[i];
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(16),
@@ -145,7 +175,7 @@ class HomePage extends HookConsumerWidget {
                       gameState: gameState,
                     ),
                     ElevatedButton(
-                      onPressed: () => context.pushReplacement(() => GameView(cardGame: builder(difficulty))),
+                      onPressed: () => onStartGame(selectedGameState.value),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
@@ -162,12 +192,16 @@ class HomePage extends HookConsumerWidget {
     );
   }
 
-  Widget buildVerticalLayout(BuildContext context, {required Map<Game, GameDetails> gameDetails}) {
+  Widget buildVerticalLayout(
+    BuildContext context, {
+    required Game? lastGamePlayed,
+    required Map<Game, GameDetails> gameDetails,
+  }) {
     return HookBuilder(
       key: ValueKey('vertical'),
       builder: (context) {
-        final pageState = useState(0);
-        final pageController = usePageController();
+        final pageState = useState(lastGamePlayed == null ? 0 : gameDetails.keys.toList().indexOf(lastGamePlayed));
+        final pageController = usePageController(initialPage: pageState.value);
 
         return Column(
           children: [
@@ -181,7 +215,7 @@ class HomePage extends HookConsumerWidget {
                   controller: pageController,
                   onPageChanged: (page) => pageState.value = page,
                   children: gameDetails.mapToIterable((game, details) {
-                    final (:difficulty, :onChangeDifficulty, :builder, :gameState) = details;
+                    final (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame) = details;
 
                     return Container(
                       decoration: BoxDecoration(
@@ -217,8 +251,7 @@ class HomePage extends HookConsumerWidget {
                                       gameState: gameState,
                                     ),
                                     ElevatedButton(
-                                      onPressed: () =>
-                                          context.pushReplacement(() => GameView(cardGame: builder(difficulty))),
+                                      onPressed: () => onStartGame(game),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.black,
                                         foregroundColor: Colors.white,
