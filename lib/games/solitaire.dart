@@ -338,7 +338,7 @@ class Solitaire extends HookWidget {
         onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
         onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
         isVictory: state.value.isVictory,
-        builder: (context, constraints, gameKey) {
+        builder: (context, constraints, cardBack, gameKey) {
           final axis = constraints.largestAxis;
           final minSize = constraints.smallest.longestSide;
           final spacing = minSize / 100;
@@ -380,7 +380,7 @@ class Solitaire extends HookWidget {
 
           return CardGame(
             gameKey: gameKey,
-            style: playingCardStyle(sizeMultiplier: sizeMultiplier),
+            style: playingCardStyle(sizeMultiplier: sizeMultiplier, cardBack: cardBack),
             children: [
               Row(
                 children: [

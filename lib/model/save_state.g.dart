@@ -22,6 +22,8 @@ SaveState _$SaveStateFromJson(Map<String, dynamic> json) => SaveState(
       background:
           $enumDecodeNullable(_$BackgroundEnumMap, json['background']) ??
               Background.green,
+      cardBack: $enumDecodeNullable(_$CardBackEnumMap, json['cardBack']) ??
+          CardBack.redStripes,
     );
 
 Map<String, dynamic> _$SaveStateToJson(SaveState instance) => <String, dynamic>{
@@ -31,6 +33,7 @@ Map<String, dynamic> _$SaveStateToJson(SaveState instance) => <String, dynamic>{
       'lastPlayedGameDifficulties': instance.lastPlayedGameDifficulties
           .map((k, e) => MapEntry(_$GameEnumMap[k]!, _$DifficultyEnumMap[e]!)),
       'background': _$BackgroundEnumMap[instance.background]!,
+      'cardBack': _$CardBackEnumMap[instance.cardBack]!,
     };
 
 const _$GameEnumMap = {
@@ -51,4 +54,13 @@ const _$BackgroundEnumMap = {
   Background.blueGrey: 'blueGrey',
   Background.brown: 'brown',
   Background.grey: 'grey',
+};
+
+const _$CardBackEnumMap = {
+  CardBack.redStripes: 'redStripes',
+  CardBack.orangeStripes: 'orangeStripes',
+  CardBack.purpleStripes: 'purpleStripes',
+  CardBack.greyStripes: 'greyStripes',
+  CardBack.blueStripes: 'blueStripes',
+  CardBack.tealStripes: 'tealStripes',
 };

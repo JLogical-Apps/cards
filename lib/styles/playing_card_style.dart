@@ -1,9 +1,9 @@
 import 'package:card_game/card_game.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/styles/playing_card_builder.dart';
 
-CardGameStyle<SuitedCard> playingCardStyle({double sizeMultiplier = 1}) => CardGameStyle(
+CardGameStyle<SuitedCard> playingCardStyle({double sizeMultiplier = 1, required CardBack cardBack}) => CardGameStyle(
       cardSize: Size(69, 93) * sizeMultiplier,
       emptyGroupBuilder: (state) => AnimatedContainer(
         duration: Duration(milliseconds: 300),
@@ -50,12 +50,7 @@ CardGameStyle<SuitedCard> playingCardStyle({double sizeMultiplier = 1}) => CardG
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.black, width: 2),
             ),
-            child: SvgPicture.asset(
-              'assets/backs/back.svg',
-              theme: SvgTheme(currentColor: Colors.red),
-              fit: BoxFit.fill,
-              placeholderBuilder: (_) => ColoredBox(color: Colors.red),
-            ),
+            child: cardBack.build(),
           ),
         ),
       ),

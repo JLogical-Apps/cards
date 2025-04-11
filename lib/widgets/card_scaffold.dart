@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/home_page.dart';
+import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
@@ -20,7 +21,7 @@ class CardScaffold extends HookConsumerWidget {
   final Game game;
   final Difficulty difficulty;
 
-  final Widget Function(BuildContext, BoxConstraints, Object gameKey) builder;
+  final Widget Function(BuildContext, BoxConstraints, CardBack, Object gameKey) builder;
 
   final Function() onNewGame;
   final Function() onRestart;
@@ -46,6 +47,8 @@ class CardScaffold extends HookConsumerWidget {
 
     final startTimeState = useState(DateTime.now());
     final currentTimeState = useState(DateTime.now());
+
+    final saveState = ref.watch(saveStateNotifierProvider).valueOrNull;
 
     useEffect(() {
       if (isVictory) {
@@ -77,6 +80,10 @@ class CardScaffold extends HookConsumerWidget {
       confettiController.play();
     } else {
       confettiController.stop();
+    }
+
+    if (saveState == null) {
+      return SizedBox.shrink();
     }
 
     return LayoutBuilder(
@@ -163,7 +170,12 @@ class CardScaffold extends HookConsumerWidget {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: 1080),
                         child: LayoutBuilder(
-                          builder: (context, constraints) => builder(context, constraints, startTimeState.value),
+                          builder: (context, constraints) => builder(
+                            context,
+                            constraints,
+                            saveState.cardBack,
+                            startTimeState.value,
+                          ),
                         ),
                       ),
                     ),
