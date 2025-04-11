@@ -60,7 +60,7 @@ class SettingsDialog {
               TextButton(
                 child: Text('Close'),
                 onPressed: () => Navigator.of(context).pop(),
-              )
+              ),
             ],
           ),
         );

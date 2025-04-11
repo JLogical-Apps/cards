@@ -9,11 +9,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:solitaire/context/card_game_context.dart';
+import 'package:solitaire/dialogs/customization_dialog.dart';
 import 'package:solitaire/dialogs/settings_dialog.dart';
 import 'package:solitaire/game_view.dart';
 import 'package:solitaire/games/free_cell.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
 import 'package:solitaire/games/solitaire.dart';
+import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/model/game_state.dart';
@@ -69,6 +71,7 @@ class HomePage extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
+            forceMaterialTransparency: true,
             actions: [
               Tooltip(
                 message: 'Achievements',
@@ -81,7 +84,7 @@ class HomePage extends ConsumerWidget {
                 message: 'Customization',
                 child: IconButton(
                   icon: Icon(Symbols.palette, fill: 1),
-                  onPressed: () {},
+                  onPressed: () => CustomizationDialog.show(context),
                 ),
               ),
               Tooltip(
@@ -140,12 +143,14 @@ class HomePage extends ConsumerWidget {
                     context,
                     lastGamePlayed: saveState.lastGamePlayed,
                     gameDetails: gameDetails,
+                    background: saveState.background,
                   );
                 } else {
                   return buildVerticalLayout(
                     context,
                     lastGamePlayed: saveState.lastGamePlayed,
                     gameDetails: gameDetails,
+                    background: saveState.background,
                   );
                 }
               },
@@ -160,6 +165,7 @@ class HomePage extends ConsumerWidget {
     BuildContext context, {
     required Game? lastGamePlayed,
     required Map<Game, GameDetails> gameDetails,
+    required Background background,
   }) {
     return HookBuilder(
       key: ValueKey('horizontal'),
@@ -189,7 +195,7 @@ class HomePage extends ConsumerWidget {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Material(
-                        color: Colors.green,
+                        color: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: selectedGameState.value == game ? BorderSide(width: 4) : BorderSide.none,
@@ -198,6 +204,7 @@ class HomePage extends ConsumerWidget {
                           aspectRatio: 3 / 2,
                           child: Stack(
                             children: [
+                              Positioned.fill(child: background.build()),
                               IgnorePointer(child: builder(Difficulty.classic)),
                               Positioned.fill(
                                 child: ColoredBox(
@@ -263,6 +270,7 @@ class HomePage extends ConsumerWidget {
     BuildContext context, {
     required Game? lastGamePlayed,
     required Map<Game, GameDetails> gameDetails,
+    required Background background,
   }) {
     return HookBuilder(
       key: ValueKey('vertical'),
@@ -283,16 +291,13 @@ class HomePage extends ConsumerWidget {
                   children: gameDetails.mapToIterable((game, details) {
                     final (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame) = details;
 
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green,
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                      ),
-                      margin: EdgeInsets.symmetric(horizontal: 16),
-                      child: Provider(
-                        create: (_) => CardGameContext(isPreview: true),
                         child: Stack(
                           children: [
+                            Positioned.fill(child: background.build()),
                             IgnorePointer(child: builder(Difficulty.classic)),
                             Positioned.fill(
                               child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),

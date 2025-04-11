@@ -44,6 +44,12 @@ Future<void> main() async {
         menuTheme: MenuThemeData(
           style: MenuStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         ),
+        appBarTheme: AppBarTheme(
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+        ),
       ),
       home: HomePage(),
     ),

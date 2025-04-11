@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/model/save_state.dart';
@@ -18,7 +19,7 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     final sharedPreferences = await SharedPreferences.getInstance();
     final saveStateRaw = sharedPreferences.getString(_saveStateKey);
     final saveState = guard(() => saveStateRaw?.mapIfNonNull((raw) => SaveState.fromJson(jsonDecode(raw))));
-    return saveState ?? SaveState(gameStates: {}, lastGamePlayed: null, lastPlayedGameDifficulties: {});
+    return saveState ?? SaveState.empty();
   }
 
   Future<void> saveGameCompleted({
@@ -38,8 +39,13 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withGameStarted(game: game, difficulty: difficulty));
   }
 
+  Future<void> saveNewBackground({required Background background}) async {
+    final saveState = await future;
+    await _saveState(saveState.withBackground(background: background));
+  }
+
   Future<void> deleteAllData() async {
-    await _saveState(SaveState(gameStates: {}, lastGamePlayed: null, lastPlayedGameDifficulties: {}));
+    await _saveState(SaveState.empty());
   }
 
   Future<void> _saveState(SaveState state) async {
