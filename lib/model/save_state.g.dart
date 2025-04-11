@@ -14,10 +14,11 @@ SaveState _$SaveStateFromJson(Map<String, dynamic> json) => SaveState(
       lastGamePlayed:
           $enumDecodeNullable(_$GameEnumMap, json['lastGamePlayed']),
       lastPlayedGameDifficulties:
-          (json['lastPlayedGameDifficulties'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry(
-            $enumDecode(_$GameEnumMap, k), $enumDecode(_$DifficultyEnumMap, e)),
-      ),
+          (json['lastPlayedGameDifficulties'] as Map<String, dynamic>?)?.map(
+                (k, e) => MapEntry($enumDecode(_$GameEnumMap, k),
+                    $enumDecode(_$DifficultyEnumMap, e)),
+              ) ??
+              {},
     );
 
 Map<String, dynamic> _$SaveStateToJson(SaveState instance) => <String, dynamic>{

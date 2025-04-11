@@ -6,7 +6,7 @@ part of 'save_state_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$saveStateNotifierHash() => r'deaae48ea5109374a96d4752aab0c104d133c244';
+String _$saveStateNotifierHash() => r'd70781828c5a4ea5841abed6802d4c16fd872600';
 
 /// See also [SaveStateNotifier].
 @ProviderFor(SaveStateNotifier)

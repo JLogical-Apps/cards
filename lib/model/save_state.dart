@@ -10,6 +10,8 @@ class SaveState {
   final Map<Game, GameState> gameStates;
 
   final Game? lastGamePlayed;
+
+  @JsonKey(defaultValue: {})
   final Map<Game, Difficulty> lastPlayedGameDifficulties;
 
   const SaveState({required this.gameStates, required this.lastGamePlayed, required this.lastPlayedGameDifficulties});
