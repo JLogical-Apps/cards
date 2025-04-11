@@ -38,6 +38,10 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withGameStarted(game: game, difficulty: difficulty));
   }
 
+  Future<void> deleteAllData() async {
+    await _saveState(SaveState(gameStates: {}, lastGamePlayed: null, lastPlayedGameDifficulties: {}));
+  }
+
   Future<void> _saveState(SaveState state) async {
     this.state = AsyncValue.data(state);
     final raw = jsonEncode(state.toJson());

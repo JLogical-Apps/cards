@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:solitaire/context/card_game_context.dart';
+import 'package:solitaire/dialogs/settings_dialog.dart';
 import 'package:solitaire/game_view.dart';
 import 'package:solitaire/games/free_cell.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
@@ -95,7 +96,7 @@ class HomePage extends ConsumerWidget {
                   menuChildren: [
                     MenuItemButton(
                       leadingIcon: Icon(Icons.settings),
-                      onPressed: () {},
+                      onPressed: () => SettingsDialog.show(context),
                       child: Text('Settings'),
                     ),
                     MenuItemButton(
