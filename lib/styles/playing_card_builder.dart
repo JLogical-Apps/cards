@@ -21,7 +21,7 @@ class PlayingCardBuilder extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 2),
           child: SvgPicture.asset(
-            'assets/${getSuitName(card)}-${getValueName(card)}.svg',
+            'assets/faces/${getSuitName(card)}-${getValueName(card)}.svg',
             width: 69,
             height: 93,
           ),
