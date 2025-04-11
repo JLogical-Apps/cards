@@ -15,15 +15,18 @@ dependencies:
   confetti: ^0.8.0
   equatable: ^2.0.7
   flutter_hooks: ^0.21.2
+  flutter_markdown: ^0.7.7
   flutter_svg: ^2.0.17
   hooks_riverpod: ^2.6.1
   intl: ^0.18.0
   json_annotation: ^4.9.0
   material_symbols_icons: ^4.2811.0
+  package_info_plus: ^8.3.0
   provider: ^6.1.2
   riverpod_annotation: ^2.6.1
   shared_preferences: ^2.5.3
   smooth_page_indicator: ^1.2.0+3
+  url_launcher: ^6.3.1
 
   utils:
     git:
@@ -49,6 +52,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/
     - assets/backs/
     - assets/faces/
 

@@ -11,6 +11,7 @@ import 'package:solitaire/home_page.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
+import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
 import 'package:utils/utils.dart';
@@ -103,9 +104,6 @@ class CardScaffold extends HookConsumerWidget {
                             Tooltip(
                               message: 'Menu',
                               child: MenuAnchor(
-                                style: MenuStyle(
-                                  padding: WidgetStateProperty.all(EdgeInsets.zero),
-                                ),
                                 builder: (context, controller, child) {
                                   return ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -134,8 +132,7 @@ class CardScaffold extends HookConsumerWidget {
                                   ),
                                   MenuItemButton(
                                     leadingIcon: Icon(Icons.close),
-                                    onPressed: () => Navigator.of(context)
-                                        .pushReplacement(MaterialPageRoute(builder: (_) => HomePage())),
+                                    onPressed: () => context.pushReplacement(() => HomePage()),
                                     child: Text('Close'),
                                   ),
                                 ],
@@ -215,8 +212,10 @@ class CardScaffold extends HookConsumerWidget {
                                       BottomSheetAction(
                                         title: Text('Close'),
                                         leading: Icon(Icons.close),
-                                        onPressed: (_) => Navigator.of(context)
-                                            .pushReplacement(MaterialPageRoute(builder: (_) => HomePage())),
+                                        onPressed: (_) {
+                                          Navigator.of(context).pop();
+                                          context.pushReplacement(() => HomePage());
+                                        },
                                       ),
                                     ],
                                   );

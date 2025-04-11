@@ -2,7 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart' hide Provider;
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:solitaire/context/card_game_context.dart';
@@ -16,6 +19,7 @@ import 'package:solitaire/model/game_state.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:utils/utils.dart';
 
 typedef GameDetails = ({
@@ -63,6 +67,69 @@ class HomePage extends ConsumerWidget {
             )));
 
         return Scaffold(
+          appBar: AppBar(
+            actions: [
+              Tooltip(
+                message: 'Achievements',
+                child: IconButton(
+                  icon: Icon(Symbols.trophy, fill: 1),
+                  onPressed: () {},
+                ),
+              ),
+              Tooltip(
+                message: 'Customization',
+                child: IconButton(
+                  icon: Icon(Symbols.palette, fill: 1),
+                  onPressed: () {},
+                ),
+              ),
+              Tooltip(
+                message: 'More',
+                child: MenuAnchor(
+                  builder: (context, controller, child) {
+                    return IconButton(
+                      onPressed: () => controller.open(),
+                      icon: Icon(Icons.more_vert),
+                    );
+                  },
+                  menuChildren: [
+                    MenuItemButton(
+                      leadingIcon: Icon(Icons.settings),
+                      onPressed: () {},
+                      child: Text('Settings'),
+                    ),
+                    MenuItemButton(
+                      leadingIcon: Icon(Icons.info),
+                      onPressed: () async {
+                        final packageVersion = await PackageInfo.fromPlatform();
+
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        showAboutDialog(
+                          context: context,
+                          applicationIcon: Image.asset('assets/cards.png', width: 80, height: 80),
+                          applicationName: 'Cards',
+                          applicationVersion: packageVersion.version,
+                          children: [
+                            MarkdownBody(
+                              data: 'Built by [JLogical](https://www.jlogical.com)',
+                              onTapLink: (text, href, title) => launchUrlString(
+                                href!,
+                                mode: LaunchMode.externalApplication,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      child: Text('About'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           body: Provider.value(
             value: CardGameContext(isPreview: true),
             child: LayoutBuilder(
@@ -112,7 +179,6 @@ class HomePage extends ConsumerWidget {
                 child: ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16) +
                       EdgeInsets.only(
-                        top: max(MediaQuery.paddingOf(context).top + 16, 32),
                         bottom: max(MediaQuery.paddingOf(context).bottom + 16, 32),
                       ),
                   itemCount: gameDetails.length,
@@ -205,7 +271,6 @@ class HomePage extends ConsumerWidget {
 
         return Column(
           children: [
-            SizedBox(height: max(MediaQuery.paddingOf(context).bottom + 32, 48)),
             Expanded(
               child: MediaQuery.removePadding(
                 removeTop: true,
