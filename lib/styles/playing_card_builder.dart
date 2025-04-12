@@ -1,6 +1,7 @@
 import 'package:card_game/card_game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 
 class PlayingCardBuilder extends StatelessWidget {
@@ -24,30 +25,15 @@ class PlayingCardBuilder extends StatelessWidget {
           // 6 of clubs optimization is weird - use regular SVG for that card only.
           child: card.value == NumberSuitedCardValue(value: 6) && card.suit == CardSuit.clubs
               ? SvgPicture.asset(
-                  'assets/faces/${getSuitName(card)}-${getValueName(card)}.svg',
+                  PlayingCardAssetBundleCache.getSvgPath(card),
                   fit: BoxFit.contain,
                 )
               : VectorGraphic(
-                  loader: AssetBytesLoader('assets/faces/${getSuitName(card)}-${getValueName(card)}.svg.vec'),
+                  loader: PlayingCardAssetBundleCache.getLoader(card),
                   fit: BoxFit.contain,
                 ),
         ),
       ),
     );
   }
-
-  String getSuitName(SuitedCard card) => switch (card.suit) {
-        CardSuit.hearts => 'HEART',
-        CardSuit.diamonds => 'DIAMOND',
-        CardSuit.clubs => 'CLUB',
-        CardSuit.spades => 'SPADE',
-      };
-
-  String getValueName(SuitedCard card) => switch (card.value) {
-        NumberSuitedCardValue(:final value) => value.toString(),
-        JackSuitedCardValue() => '11-JACK',
-        QueenSuitedCardValue() => '12-QUEEN',
-        KingSuitedCardValue() => '13-KING',
-        AceSuitedCardValue() => '1',
-      };
 }

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/home_page.dart';
 import 'package:solitaire/licenses.dart';
+import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await registerExtraLicenses();
+  await PlayingCardAssetBundleCache.preloadAssets();
 
   runApp(ProviderScope(
     child: MaterialApp(
