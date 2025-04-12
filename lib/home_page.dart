@@ -22,6 +22,7 @@ import 'package:solitaire/model/game_state.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
+import 'package:solitaire/utils/duration_extensions.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:utils/utils.dart';
 
@@ -380,6 +381,10 @@ class HomePage extends ConsumerWidget {
           selectedDifficulty.getDescription(game),
           style: TextTheme.of(context).bodyLarge,
         ),
+        if (gameState?.states[selectedDifficulty] case final difficultyState?)
+          MarkdownBody(
+            data: '**Fastest Time**: ${difficultyState.fastestGame.format()}',
+          ),
       ],
     );
   }
