@@ -108,7 +108,7 @@ class HomePage extends ConsumerWidget {
                           context: context,
                           applicationIcon: Image.asset('assets/cards.png', width: 80, height: 80),
                           applicationName: 'Cards',
-                          applicationVersion: packageVersion.version,
+                          applicationVersion: '${packageVersion.version}+${packageVersion.buildNumber}',
                           children: [
                             MarkdownBody(
                               data: 'Built by [JLogical](https://www.jlogical.com)',
