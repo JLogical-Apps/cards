@@ -74,13 +74,6 @@ class HomePage extends ConsumerWidget {
             forceMaterialTransparency: true,
             actions: [
               Tooltip(
-                message: 'Achievements',
-                child: IconButton(
-                  icon: Icon(Symbols.trophy, fill: 1),
-                  onPressed: () {},
-                ),
-              ),
-              Tooltip(
                 message: 'Customization',
                 child: IconButton(
                   icon: Icon(Symbols.palette, fill: 1),
@@ -376,7 +369,10 @@ class HomePage extends ConsumerWidget {
                       fill: gameState?[difficulty]?.gamesWon != null ? 1 : 0,
                     ),
                     selected: difficulty == selectedDifficulty,
-                    onSelected: (_) => onChangeDifficulty(difficulty),
+                    onSelected: difficulty == Difficulty.classic ||
+                            gameState?[Difficulty.values[difficulty.index - 1]]?.gamesWon != null
+                        ? (_) => onChangeDifficulty(difficulty)
+                        : null,
                   ))
               .toList(),
         ),
