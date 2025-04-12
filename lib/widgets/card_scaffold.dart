@@ -12,6 +12,7 @@ import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
+import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
@@ -52,6 +53,7 @@ class CardScaffold extends HookConsumerWidget {
 
     useEffect(() {
       if (isVictory) {
+        Audio.playWin();
         ref.read(saveStateNotifierProvider.notifier).saveGameCompleted(
               game: game,
               difficulty: difficulty,
@@ -60,6 +62,11 @@ class CardScaffold extends HookConsumerWidget {
       }
       return null;
     }, [isVictory]);
+
+    useEffect(() {
+      if (!isPreview) Audio.playRedraw();
+      return null;
+    }, [startTimeState.value]);
 
     useListen(useMemoized(
       () => Stream.periodic(
@@ -149,7 +156,12 @@ class CardScaffold extends HookConsumerWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: isVictory ? null : onUndo,
+                                onPressed: isVictory
+                                    ? null
+                                    : () {
+                                        Audio.playUndo();
+                                        onUndo?.call();
+                                      },
                                 child: Icon(Icons.undo),
                               ),
                             ),
@@ -243,7 +255,12 @@ class CardScaffold extends HookConsumerWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: isVictory ? null : onUndo,
+                                onPressed: isVictory
+                                    ? null
+                                    : () {
+                                        Audio.playUndo();
+                                        onUndo?.call();
+                                      },
                                 child: Icon(Icons.undo),
                               ),
                             ),

@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
+import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -597,7 +598,10 @@ class FreeCell extends HookWidget {
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
-      onNewState: (newState) => state.value = newState,
+      onNewState: (newState) {
+        Audio.playPlace();
+        state.value = newState;
+      },
       child: CardScaffold(
         game: Game.freeCell,
         difficulty: difficulty,
@@ -634,12 +638,16 @@ class FreeCell extends HookWidget {
                             values: card == null ? [] : [card],
                             canGrab: true,
                             canMoveCardHere: (move) => move.cardValues.length == 1 && card == null,
-                            onCardMovedHere: (move) => state.value =
-                                state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i)),
+                            onCardMovedHere: (move) {
+                              Audio.playPlace();
+                              state.value =
+                                  state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i));
+                            },
                             onCardPressed: (card) {
                               // Use auto-move logic for free cell clicks
                               final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
                               if (newState != null) {
+                                Audio.playPlace();
                                 state.value = newState;
                               }
                             },
@@ -657,6 +665,7 @@ class FreeCell extends HookWidget {
                                 move.cardValues.length == 1 &&
                                 canAddToFoundation(move.cardValues.first, entry.key, entry.value),
                             onCardMovedHere: (move) {
+                              Audio.playPlace();
                               state.value = state.value
                                   .withMove(move.cardValues, move.fromGroupValue, FoundationGroupValue(entry.key));
                             },
@@ -666,6 +675,7 @@ class FreeCell extends HookWidget {
                                 foundationGroup: FoundationGroupValue(entry.key),
                               );
                               if (newState != null) {
+                                Audio.playPlace();
                                 state.value = newState;
                               }
                             },
@@ -697,8 +707,11 @@ class FreeCell extends HookWidget {
                               return state.value.isValidSequence(subsequence);
                             },
                             canMoveCardHere: (move) => state.value.canMoveToTableau(move.cardValues, i),
-                            onCardMovedHere: (move) => state.value =
-                                state.value.withMove(move.cardValues, move.fromGroupValue, TableauGroupValue(i)),
+                            onCardMovedHere: (move) {
+                              Audio.playPlace();
+                              state.value =
+                                  state.value.withMove(move.cardValues, move.fromGroupValue, TableauGroupValue(i));
+                            },
                             onCardPressed: (card) {
                               final cardIndex = columnCards.indexOf(card);
 
@@ -707,6 +720,7 @@ class FreeCell extends HookWidget {
                                   .withAutoMove(tableauGroup: TableauGroupValue(i), cardIndexInTableau: cardIndex);
 
                               if (newState != null) {
+                                Audio.playPlace();
                                 state.value = newState;
                               }
                             },

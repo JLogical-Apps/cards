@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
+import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -136,6 +137,7 @@ class GolfSolitaire extends HookWidget {
                                   return;
                                 }
                                 if (state.value.canSelect(card)) {
+                                  Audio.playPlace();
                                   state.value = state.value.withSelection(card);
                                 }
                               },
@@ -151,7 +153,10 @@ class GolfSolitaire extends HookWidget {
                     CardDeck<SuitedCard, dynamic>.flipped(
                       value: 'deck',
                       values: state.value.deck,
-                      onCardPressed: (_) => state.value = state.value.withDraw(),
+                      onCardPressed: (_) {
+                        Audio.playDraw();
+                        state.value = state.value.withDraw();
+                      },
                     ),
                     CardDeck<SuitedCard, dynamic>(
                       value: 'completed',

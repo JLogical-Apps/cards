@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 import 'package:vector_graphics/vector_graphics.dart';

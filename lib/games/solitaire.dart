@@ -8,6 +8,7 @@ import 'package:solitaire/group/exposed_deck.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
+import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -89,8 +90,9 @@ class SolitaireState {
 
   int getCardValue(SuitedCard card) => SuitedCardValueMapper.aceAsLowest.getValue(card);
 
-  SolitaireState withAutoTap(int column, List<SuitedCard> cards) {
+  SolitaireState withAutoTap(int column, List<SuitedCard> cards, {required Function() onSuccess}) {
     if (cards.length == 1 && canComplete(cards.first)) {
+      onSuccess();
       return withAttemptToComplete(column);
     }
 
@@ -99,12 +101,14 @@ class SolitaireState {
       return this;
     }
 
+    onSuccess();
     return withMoveFromColumn(cards, column, newColumn);
   }
 
-  SolitaireState withAutoMoveFromDeck() {
+  SolitaireState withAutoMoveFromDeck({required Function() onSuccess}) {
     final card = revealedDeck.last;
     if (canComplete(card)) {
+      onSuccess();
       return withAttemptToCompleteFromDeck();
     }
 
@@ -113,10 +117,11 @@ class SolitaireState {
       return this;
     }
 
+    onSuccess();
     return withMoveFromDeck([card], newColumn);
   }
 
-  SolitaireState withAutoMoveFromCompleted(CardSuit suit) {
+  SolitaireState withAutoMoveFromCompleted(CardSuit suit, {required Function() onSuccess}) {
     final card = completedCards[suit]!.last;
 
     final newColumn = List.generate(7, (i) => canMove([card], i)).indexOf(true);
@@ -124,6 +129,7 @@ class SolitaireState {
       return this;
     }
 
+    onSuccess();
     return withMoveFromCompleted(suit, newColumn);
   }
 
@@ -330,7 +336,10 @@ class Solitaire extends HookWidget {
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
-      onNewState: (newState) => state.value = newState,
+      onNewState: (newState) {
+        Audio.playPlace();
+        state.value = newState;
+      },
       child: CardScaffold(
         game: Game.klondike,
         difficulty: difficulty,
@@ -353,7 +362,14 @@ class Solitaire extends HookWidget {
 
           final hiddenDeck = GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => state.value = state.value.withDrawOrRefresh(),
+            onTap: () {
+              if (state.value.deck.isEmpty) {
+                Audio.playRedraw();
+              } else {
+                Audio.playDraw();
+              }
+              state.value = state.value.withDrawOrRefresh();
+            },
             child: CardDeck<SuitedCard, dynamic>.flipped(
               value: 'deck',
               values: state.value.deck,
@@ -365,7 +381,9 @@ class Solitaire extends HookWidget {
             amountExposed: drawAmount,
             overlayOffset: Offset(0, 1) * cardOffset,
             canMoveCardHere: (_) => false,
-            onCardPressed: (card) => state.value = state.value.withAutoMoveFromDeck(),
+            onCardPressed: (_) {
+              state.value = state.value.withAutoMoveFromDeck(onSuccess: () => Audio.playPlace());
+            },
             canGrab: true,
           );
 
@@ -374,7 +392,10 @@ class Solitaire extends HookWidget {
                     value: entry.key,
                     values: entry.value,
                     canGrab: true,
-                    onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(entry.key),
+                    onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(
+                      entry.key,
+                      onSuccess: () => Audio.playPlace(),
+                    ),
                   ))
               .toList();
 
@@ -419,11 +440,17 @@ class Solitaire extends HookWidget {
 
                               final cardIndex = revealedCards.indexOf(card);
 
-                              state.value = state.value.withAutoTap(i, revealedCards.sublist(cardIndex));
+                              state.value = state.value.withAutoTap(
+                                i,
+                                revealedCards.sublist(cardIndex),
+                                onSuccess: () => Audio.playPlace(),
+                              );
                             },
                             canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
-                            onCardMovedHere: (move) =>
-                                state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i),
+                            onCardMovedHere: (move) {
+                              Audio.playPlace();
+                              state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i);
+                            },
                           );
                         }).toList()),
                   ),
