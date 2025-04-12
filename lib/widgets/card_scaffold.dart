@@ -156,7 +156,7 @@ class CardScaffold extends HookConsumerWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: isVictory
+                                onPressed: isVictory || onUndo == null
                                     ? null
                                     : () {
                                         ref.read(audioServiceProvider).playUndo();
@@ -255,7 +255,7 @@ class CardScaffold extends HookConsumerWidget {
                               message: 'Undo',
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.5)),
-                                onPressed: isVictory
+                                onPressed: isVictory || onUndo == null
                                     ? null
                                     : () {
                                         ref.read(audioServiceProvider).playUndo();
