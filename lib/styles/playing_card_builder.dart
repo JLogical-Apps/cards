@@ -1,6 +1,6 @@
 import 'package:card_game/card_game.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:vector_graphics/vector_graphics.dart';
 
 class PlayingCardBuilder extends StatelessWidget {
   final SuitedCard card;
@@ -20,8 +20,8 @@ class PlayingCardBuilder extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 2),
-          child: SvgPicture.asset(
-            'assets/faces/${getSuitName(card)}-${getValueName(card)}.svg',
+          child: VectorGraphic(
+            loader: AssetBytesLoader('assets/faces/${getSuitName(card)}-${getValueName(card)}.svg.vec'),
             width: 69,
             height: 93,
           ),
@@ -30,12 +30,12 @@ class PlayingCardBuilder extends StatelessWidget {
     );
   }
 
-  String getSuitName(SuitedCard card) => switch(card.suit) {
-    CardSuit.hearts => 'HEART',
-    CardSuit.diamonds => 'DIAMOND',
-    CardSuit.clubs => 'CLUB',
-    CardSuit.spades => 'SPADE',
-  };
+  String getSuitName(SuitedCard card) => switch (card.suit) {
+        CardSuit.hearts => 'HEART',
+        CardSuit.diamonds => 'DIAMOND',
+        CardSuit.clubs => 'CLUB',
+        CardSuit.spades => 'SPADE',
+      };
 
   String getValueName(SuitedCard card) => switch (card.value) {
         NumberSuitedCardValue(:final value) => value.toString(),

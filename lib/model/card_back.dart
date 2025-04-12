@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:vector_graphics/vector_graphics.dart';
 
 @JsonEnum()
 enum CardBack {
@@ -20,10 +21,10 @@ enum CardBack {
         CardBack.tealStripes => _colorStripeBack(Colors.teal),
       };
 
-  Widget _colorStripeBack(Color color) => SvgPicture.asset(
-        'assets/backs/back.svg',
-        theme: SvgTheme(currentColor: color),
+  Widget _colorStripeBack(Color color) => VectorGraphic(
+        loader: AssetBytesLoader('assets/backs/back.svg.vec'),
         fit: BoxFit.cover,
+        colorFilter: ColorFilter.mode(color, BlendMode.lighten),
         placeholderBuilder: (_) => ColoredBox(color: color),
       );
 }
