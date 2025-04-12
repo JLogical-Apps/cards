@@ -8,6 +8,8 @@ part 'audio_service.g.dart';
 class AudioService {
   final Ref ref;
 
+  final AudioPlayer audioPlayer = AudioPlayer();
+
   AudioService(this.ref);
 
   void playPlace() => _playAudio('sounds/place.wav');
@@ -22,7 +24,7 @@ class AudioService {
       return;
     }
 
-    await AudioPlayer().play(
+    await audioPlayer.play(
       AssetSource(path),
       mode: PlayerMode.lowLatency,
       volume: saveState.volume,
