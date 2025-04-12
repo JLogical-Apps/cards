@@ -50,6 +50,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withCardBack(cardBack: cardBack));
   }
 
+  Future<void> saveVolume({required double volume}) async {
+    final saveState = await future;
+    await _saveState(saveState.withVolume(volume: volume));
+  }
+
   Future<void> deleteAllData() async {
     await _saveState(SaveState.empty());
   }

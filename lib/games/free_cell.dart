@@ -5,10 +5,11 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
-import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -578,7 +579,7 @@ class FreeCellState {
   }
 }
 
-class FreeCell extends HookWidget {
+class FreeCell extends HookConsumerWidget {
   final Difficulty difficulty;
 
   const FreeCell({super.key, required this.difficulty});
@@ -592,14 +593,14 @@ class FreeCell extends HookWidget {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) {
-        Audio.playPlace();
+        ref.read(audioServiceProvider).playPlace();
         state.value = newState;
       },
       child: CardScaffold(
@@ -639,7 +640,7 @@ class FreeCell extends HookWidget {
                             canGrab: true,
                             canMoveCardHere: (move) => move.cardValues.length == 1 && card == null,
                             onCardMovedHere: (move) {
-                              Audio.playPlace();
+                              ref.read(audioServiceProvider).playPlace();
                               state.value =
                                   state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i));
                             },
@@ -647,7 +648,7 @@ class FreeCell extends HookWidget {
                               // Use auto-move logic for free cell clicks
                               final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
                               if (newState != null) {
-                                Audio.playPlace();
+                                ref.read(audioServiceProvider).playPlace();
                                 state.value = newState;
                               }
                             },
@@ -665,7 +666,7 @@ class FreeCell extends HookWidget {
                                 move.cardValues.length == 1 &&
                                 canAddToFoundation(move.cardValues.first, entry.key, entry.value),
                             onCardMovedHere: (move) {
-                              Audio.playPlace();
+                              ref.read(audioServiceProvider).playPlace();
                               state.value = state.value
                                   .withMove(move.cardValues, move.fromGroupValue, FoundationGroupValue(entry.key));
                             },
@@ -675,7 +676,7 @@ class FreeCell extends HookWidget {
                                 foundationGroup: FoundationGroupValue(entry.key),
                               );
                               if (newState != null) {
-                                Audio.playPlace();
+                                ref.read(audioServiceProvider).playPlace();
                                 state.value = newState;
                               }
                             },
@@ -708,7 +709,7 @@ class FreeCell extends HookWidget {
                             },
                             canMoveCardHere: (move) => state.value.canMoveToTableau(move.cardValues, i),
                             onCardMovedHere: (move) {
-                              Audio.playPlace();
+                              ref.read(audioServiceProvider).playPlace();
                               state.value =
                                   state.value.withMove(move.cardValues, move.fromGroupValue, TableauGroupValue(i));
                             },
@@ -720,7 +721,7 @@ class FreeCell extends HookWidget {
                                   .withAutoMove(tableauGroup: TableauGroupValue(i), cardIndexInTableau: cardIndex);
 
                               if (newState != null) {
-                                Audio.playPlace();
+                                ref.read(audioServiceProvider).playPlace();
                                 state.value = newState;
                               }
                             },

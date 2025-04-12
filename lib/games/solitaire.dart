@@ -4,11 +4,12 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/group/exposed_deck.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
-import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -314,7 +315,7 @@ class SolitaireState {
   }
 }
 
-class Solitaire extends HookWidget {
+class Solitaire extends HookConsumerWidget {
   final Difficulty difficulty;
 
   const Solitaire({super.key, required this.difficulty});
@@ -330,14 +331,14 @@ class Solitaire extends HookWidget {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
     return DelayedAutoMoveListener(
       stateGetter: () => state.value,
       nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
       onNewState: (newState) {
-        Audio.playPlace();
+        ref.read(audioServiceProvider).playPlace();
         state.value = newState;
       },
       child: CardScaffold(
@@ -364,9 +365,9 @@ class Solitaire extends HookWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () {
               if (state.value.deck.isEmpty) {
-                Audio.playRedraw();
+                ref.read(audioServiceProvider).playRedraw();
               } else {
-                Audio.playDraw();
+                ref.read(audioServiceProvider).playDraw();
               }
               state.value = state.value.withDrawOrRefresh();
             },
@@ -382,7 +383,8 @@ class Solitaire extends HookWidget {
             overlayOffset: Offset(0, 1) * cardOffset,
             canMoveCardHere: (_) => false,
             onCardPressed: (_) {
-              state.value = state.value.withAutoMoveFromDeck(onSuccess: () => Audio.playPlace());
+              state.value =
+                  state.value.withAutoMoveFromDeck(onSuccess: () => ref.read(audioServiceProvider).playPlace());
             },
             canGrab: true,
           );
@@ -394,7 +396,7 @@ class Solitaire extends HookWidget {
                     canGrab: true,
                     onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(
                       entry.key,
-                      onSuccess: () => Audio.playPlace(),
+                      onSuccess: () => ref.read(audioServiceProvider).playPlace(),
                     ),
                   ))
               .toList();
@@ -443,12 +445,12 @@ class Solitaire extends HookWidget {
                               state.value = state.value.withAutoTap(
                                 i,
                                 revealedCards.sublist(cardIndex),
-                                onSuccess: () => Audio.playPlace(),
+                                onSuccess: () => ref.read(audioServiceProvider).playPlace(),
                               );
                             },
                             canMoveCardHere: (move) => state.value.canMove(move.cardValues, i),
                             onCardMovedHere: (move) {
-                              Audio.playPlace();
+                              ref.read(audioServiceProvider).playPlace();
                               state.value = state.value.withMove(move.cardValues, move.fromGroupValue, i);
                             },
                           );

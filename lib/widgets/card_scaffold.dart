@@ -12,7 +12,7 @@ import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
-import 'package:solitaire/utils/audio.dart';
+import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
@@ -53,7 +53,7 @@ class CardScaffold extends HookConsumerWidget {
 
     useEffect(() {
       if (isVictory) {
-        Audio.playWin();
+        ref.read(audioServiceProvider).playWin();
         ref.read(saveStateNotifierProvider.notifier).saveGameCompleted(
               game: game,
               difficulty: difficulty,
@@ -64,7 +64,7 @@ class CardScaffold extends HookConsumerWidget {
     }, [isVictory]);
 
     useEffect(() {
-      if (!isPreview) Audio.playRedraw();
+      if (!isPreview) ref.read(audioServiceProvider).playRedraw();
       return null;
     }, [startTimeState.value]);
 
@@ -159,7 +159,7 @@ class CardScaffold extends HookConsumerWidget {
                                 onPressed: isVictory
                                     ? null
                                     : () {
-                                        Audio.playUndo();
+                                        ref.read(audioServiceProvider).playUndo();
                                         onUndo?.call();
                                       },
                                 child: Icon(Icons.undo),
@@ -258,7 +258,7 @@ class CardScaffold extends HookConsumerWidget {
                                 onPressed: isVictory
                                     ? null
                                     : () {
-                                        Audio.playUndo();
+                                        ref.read(audioServiceProvider).playUndo();
                                         onUndo?.call();
                                       },
                                 child: Icon(Icons.undo),

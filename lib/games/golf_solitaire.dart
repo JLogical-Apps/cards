@@ -2,10 +2,11 @@ import 'package:card_game/card_game.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
-import 'package:solitaire/utils/audio.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
@@ -79,7 +80,7 @@ class GolfSolitaireState {
   bool get isVictory => cards.every((column) => column.isEmpty);
 }
 
-class GolfSolitaire extends HookWidget {
+class GolfSolitaire extends HookConsumerWidget {
   final Difficulty difficulty;
 
   const GolfSolitaire({super.key, required this.difficulty});
@@ -90,7 +91,7 @@ class GolfSolitaire extends HookWidget {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
     return CardScaffold(
@@ -137,7 +138,7 @@ class GolfSolitaire extends HookWidget {
                                   return;
                                 }
                                 if (state.value.canSelect(card)) {
-                                  Audio.playPlace();
+                                  ref.read(audioServiceProvider).playPlace();
                                   state.value = state.value.withSelection(card);
                                 }
                               },
@@ -154,7 +155,7 @@ class GolfSolitaire extends HookWidget {
                       value: 'deck',
                       values: state.value.deck,
                       onCardPressed: (_) {
-                        Audio.playDraw();
+                        ref.read(audioServiceProvider).playDraw();
                         state.value = state.value.withDraw();
                       },
                     ),

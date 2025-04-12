@@ -22,12 +22,16 @@ class SaveState {
   @JsonKey(defaultValue: CardBack.redStripes)
   final CardBack cardBack;
 
+  @JsonKey(defaultValue: 1.0)
+  final double volume;
+
   const SaveState({
     required this.gameStates,
     required this.lastGamePlayed,
     required this.lastPlayedGameDifficulties,
     required this.background,
     required this.cardBack,
+    required this.volume,
   });
 
   const SaveState.empty()
@@ -35,7 +39,8 @@ class SaveState {
         lastGamePlayed = null,
         lastPlayedGameDifficulties = const {},
         background = Background.green,
-        cardBack = CardBack.redStripes;
+        cardBack = CardBack.redStripes,
+        volume = 1;
 
   factory SaveState.fromJson(Map<String, dynamic> json) => _$SaveStateFromJson(json);
   Map<String, dynamic> toJson() => _$SaveStateToJson(this);
@@ -67,6 +72,7 @@ class SaveState {
 
   SaveState withBackground({required Background background}) => copyWith(background: background);
   SaveState withCardBack({required CardBack cardBack}) => copyWith(cardBack: cardBack);
+  SaveState withVolume({required double volume}) => copyWith(volume: volume);
 
   SaveState copyWith({
     Map<Game, GameState>? gameStates,
@@ -74,6 +80,7 @@ class SaveState {
     Map<Game, Difficulty>? lastPlayedGameDifficulties,
     Background? background,
     CardBack? cardBack,
+    double? volume,
   }) {
     return SaveState(
       gameStates: gameStates ?? this.gameStates,
@@ -81,6 +88,7 @@ class SaveState {
       lastPlayedGameDifficulties: lastPlayedGameDifficulties ?? this.lastPlayedGameDifficulties,
       background: background ?? this.background,
       cardBack: cardBack ?? this.cardBack,
+      volume: volume ?? this.volume,
     );
   }
 }

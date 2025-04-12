@@ -52,6 +52,9 @@ Future<void> main() async {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
         ),
+        sliderTheme: SliderThemeData(
+          overlayShape: SliderComponentShape.noOverlay,
+        ),
       ),
       home: HomePage(),
     ),
