@@ -1,5 +1,6 @@
 import 'package:card_game/card_game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 
 class PlayingCardBuilder extends StatelessWidget {
@@ -20,11 +21,16 @@ class PlayingCardBuilder extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 2),
-          child: VectorGraphic(
-            loader: AssetBytesLoader('assets/faces/${getSuitName(card)}-${getValueName(card)}.svg.vec'),
-            width: 69,
-            height: 93,
-          ),
+          // 6 of clubs optimization is weird - use regular SVG for that card only.
+          child: card.value == NumberSuitedCardValue(value: 6) && card.suit == CardSuit.clubs
+              ? SvgPicture.asset(
+                  'assets/faces/${getSuitName(card)}-${getValueName(card)}.svg',
+                  fit: BoxFit.contain,
+                )
+              : VectorGraphic(
+                  loader: AssetBytesLoader('assets/faces/${getSuitName(card)}-${getValueName(card)}.svg.vec'),
+                  fit: BoxFit.contain,
+                ),
         ),
       ),
     );
