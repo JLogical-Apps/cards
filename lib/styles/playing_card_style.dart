@@ -45,6 +45,7 @@ CardGameStyle<SuitedCard> playingCardStyle({double sizeMultiplier = 1, required 
         ),
         back: ClipRRect(
           borderRadius: BorderRadius.circular(12),
+          clipBehavior: Clip.hardEdge,
           child: Container(
             foregroundDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
