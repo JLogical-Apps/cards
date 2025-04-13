@@ -3,22 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/styles/playing_card_builder.dart';
 
-CardGameStyle<SuitedCard> playingCardStyle({double sizeMultiplier = 1, required CardBack cardBack}) => CardGameStyle(
+CardGameStyle<SuitedCard, G> playingCardStyle<G>({
+  double sizeMultiplier = 1,
+  required CardBack cardBack,
+  Widget? Function(G)? emptyGroupOverlayBuilder,
+}) =>
+    CardGameStyle(
       cardSize: Size(69, 93) * sizeMultiplier,
-      emptyGroupBuilder: (state) => AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOutCubic,
-        decoration: BoxDecoration(
-          color: switch (state) {
-            CardState.regular => Colors.white,
-            CardState.highlighted => Color(0xFF9FC7FF),
-            CardState.error => Color(0xFFFFADAD),
-          }
-              .withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
-        ),
+      emptyGroupBuilder: (group, state) => Stack(
+        children: [
+          if (emptyGroupOverlayBuilder?.call(group) case final overlay?) Center(child: overlay),
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+            decoration: BoxDecoration(
+              color: switch (state) {
+                CardState.regular => Colors.white,
+                CardState.highlighted => Color(0xFF9FC7FF),
+                CardState.error => Color(0xFFFFADAD),
+              }
+                  .withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ],
       ),
-      cardBuilder: (value, flipped, cardState) => AnimatedFlippable(
+      cardBuilder: (value, group, flipped, cardState) => AnimatedFlippable(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOutCubic,
         isFlipped: flipped,

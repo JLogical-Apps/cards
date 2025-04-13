@@ -9,18 +9,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/services/audio_service.dart';
+import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
+import 'package:vector_graphics/vector_graphics.dart';
 
-// Abstract base class for all group values
 abstract class GroupValue extends Equatable {
   const GroupValue();
 }
 
-// Tableau column group value
 class TableauGroupValue extends GroupValue {
   final int columnIndex;
 
@@ -30,7 +30,6 @@ class TableauGroupValue extends GroupValue {
   List<Object?> get props => [columnIndex];
 }
 
-// Free cell group value
 class FreeCellGroupValue extends GroupValue {
   final int cellIndex;
 
@@ -40,7 +39,6 @@ class FreeCellGroupValue extends GroupValue {
   List<Object?> get props => [cellIndex];
 }
 
-// Foundation group value
 class FoundationGroupValue extends GroupValue {
   final CardSuit suit;
 
@@ -625,7 +623,16 @@ class FreeCell extends HookConsumerWidget {
 
           return CardGame<SuitedCard, GroupValue>(
             gameKey: gameKey,
-            style: playingCardStyle(sizeMultiplier: sizeMultiplier, cardBack: cardBack),
+            style: playingCardStyle(
+              sizeMultiplier: sizeMultiplier,
+              cardBack: cardBack,
+              emptyGroupOverlayBuilder: (group) => group is FoundationGroupValue
+                  ? VectorGraphic(
+                      loader: PlayingCardAssetBundleCache.getSuitLoader(group.suit),
+                      colorFilter: ColorFilter.mode(Colors.white30, BlendMode.srcIn),
+                    )
+                  : null,
+            ),
             children: [
               Flex(
                 direction: axis.inverted,

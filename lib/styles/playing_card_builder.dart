@@ -25,11 +25,11 @@ class PlayingCardBuilder extends StatelessWidget {
           // 6 of clubs optimization is weird - use regular SVG for that card only.
           child: card.value == NumberSuitedCardValue(value: 6) && card.suit == CardSuit.clubs
               ? SvgPicture.asset(
-                  PlayingCardAssetBundleCache.getSvgPath(card),
+                  PlayingCardAssetBundleCache.getCardSvgPath(card),
                   fit: BoxFit.contain,
                 )
               : VectorGraphic(
-                  loader: PlayingCardAssetBundleCache.getLoader(card),
+                  loader: PlayingCardAssetBundleCache.getCardLoader(card),
                   fit: BoxFit.contain,
                 ),
         ),
