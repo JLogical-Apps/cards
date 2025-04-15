@@ -1,7 +1,7 @@
 name: solitaire
 description: "Collection of card games"
 publish_to: 'none'
-version: 1.0.0+5
+version: 1.0.0+6
 
 environment:
   sdk: ^3.6.0
@@ -25,7 +25,6 @@ dependencies:
   package_info_plus: ^8.3.0
   provider: ^6.1.2
   riverpod_annotation: ^2.6.1
-  rxdart: ^0.28.0
   shared_preferences: ^2.5.3
   smooth_page_indicator: ^1.2.0+3
   url_launcher: ^6.3.1
