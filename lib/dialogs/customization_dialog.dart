@@ -23,9 +23,7 @@ class CustomizationDialog {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Background', style: TextTheme.of(context).titleSmall),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.start,
-                    runSpacing: 8,
+                  Row(
                     spacing: 8,
                     children: Background.values
                         .map((background) => ClipRRect(
@@ -61,9 +59,7 @@ class CustomizationDialog {
                   ),
                   Divider(),
                   Text('Card Back', style: TextTheme.of(context).titleSmall),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.start,
-                    runSpacing: 8,
+                  Row(
                     spacing: 8,
                     children: CardBack.values
                         .map((cardBack) => ClipRRect(

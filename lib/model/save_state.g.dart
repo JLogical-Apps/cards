@@ -52,7 +52,6 @@ const _$DifficultyEnumMap = {
 
 const _$BackgroundEnumMap = {
   Background.green: 'green',
-  Background.blue: 'blue',
   Background.blueGrey: 'blueGrey',
   Background.brown: 'brown',
   Background.grey: 'grey',
@@ -60,8 +59,6 @@ const _$BackgroundEnumMap = {
 
 const _$CardBackEnumMap = {
   CardBack.redStripes: 'redStripes',
-  CardBack.orangeStripes: 'orangeStripes',
-  CardBack.purpleStripes: 'purpleStripes',
   CardBack.greyStripes: 'greyStripes',
   CardBack.blueStripes: 'blueStripes',
   CardBack.tealStripes: 'tealStripes',
