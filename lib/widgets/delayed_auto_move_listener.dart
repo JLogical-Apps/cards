@@ -10,6 +10,7 @@ class DelayedAutoMoveListener<T> extends HookWidget {
   final T Function() stateGetter;
   final T? Function(T state) nextStateGetter;
   final Function(T) onNewState;
+  final Object gameKey;
 
   const DelayedAutoMoveListener({
     super.key,
@@ -18,6 +19,7 @@ class DelayedAutoMoveListener<T> extends HookWidget {
     required this.stateGetter,
     required this.nextStateGetter,
     required this.onNewState,
+    required this.gameKey,
   });
 
   @override
@@ -32,6 +34,7 @@ class DelayedAutoMoveListener<T> extends HookWidget {
       stateGetter: stateGetter,
       nextStateGetter: nextStateGetter,
       onNewState: onNewState,
+      gameKey: gameKey,
     );
 
     return Listener(

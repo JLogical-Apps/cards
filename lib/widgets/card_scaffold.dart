@@ -11,7 +11,6 @@ import 'package:solitaire/context/card_game_context.dart';
 import 'package:solitaire/home_page.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
-import 'package:solitaire/model/difficulty_game_state.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/services/audio_service.dart';

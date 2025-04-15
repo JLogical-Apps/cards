@@ -594,34 +594,35 @@ class FreeCell extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
-    return DelayedAutoMoveListener(
-      stateGetter: () => state.value,
-      nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
-      onNewState: (newState) {
-        ref.read(audioServiceProvider).playPlace();
-        state.value = newState;
-      },
-      child: CardScaffold(
-        game: Game.freeCell,
-        difficulty: difficulty,
-        onNewGame: () => state.value = initialState,
-        onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
-        onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
-        isVictory: state.value.isVictory,
-        builder: (context, constraints, cardBack, gameKey) {
-          final axis = constraints.largestAxis;
-          final minSize = constraints.smallest.longestSide;
-          final spacing = minSize / 100;
+    return CardScaffold(
+      game: Game.freeCell,
+      difficulty: difficulty,
+      onNewGame: () => state.value = initialState,
+      onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(canAutoMove: true),
+      onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
+      isVictory: state.value.isVictory,
+      builder: (context, constraints, cardBack, gameKey) {
+        final axis = constraints.largestAxis;
+        final minSize = constraints.smallest.longestSide;
+        final spacing = minSize / 100;
 
-          final sizeMultiplier = constraints.findCardSizeMultiplier(
-            maxRows: axis == Axis.horizontal ? 4 : 8,
-            maxCols: axis == Axis.horizontal ? 8 : 2,
-            spacing: spacing,
-          );
+        final sizeMultiplier = constraints.findCardSizeMultiplier(
+          maxRows: axis == Axis.horizontal ? 4 : 8,
+          maxCols: axis == Axis.horizontal ? 8 : 2,
+          spacing: spacing,
+        );
 
-          final cardOffset = sizeMultiplier * 25;
+        final cardOffset = sizeMultiplier * 25;
 
-          return CardGame<SuitedCard, GroupValue>(
+        return DelayedAutoMoveListener(
+          stateGetter: () => state.value,
+          nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
+          gameKey: gameKey,
+          onNewState: (newState) {
+            ref.read(audioServiceProvider).playPlace();
+            state.value = newState;
+          },
+          child: CardGame<SuitedCard, GroupValue>(
             gameKey: gameKey,
             style: playingCardStyle(
               sizeMultiplier: sizeMultiplier,
@@ -740,9 +741,9 @@ class FreeCell extends HookConsumerWidget {
                 ],
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

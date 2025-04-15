@@ -336,74 +336,74 @@ class Solitaire extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
-    return DelayedAutoMoveListener(
-      stateGetter: () => state.value,
-      nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
-      onNewState: (newState) {
-        ref.read(audioServiceProvider).playPlace();
-        state.value = newState;
-      },
-      child: CardScaffold(
-        game: Game.klondike,
-        difficulty: difficulty,
-        onNewGame: () => state.value = initialState,
-        onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
-        onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
-        isVictory: state.value.isVictory,
-        builder: (context, constraints, cardBack, gameKey) {
-          final axis = constraints.largestAxis;
-          final minSize = constraints.smallest.longestSide;
-          final spacing = minSize / 100;
+    return CardScaffold(
+      game: Game.klondike,
+      difficulty: difficulty,
+      onNewGame: () => state.value = initialState,
+      onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
+      onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
+      isVictory: state.value.isVictory,
+      builder: (context, constraints, cardBack, gameKey) {
+        final axis = constraints.largestAxis;
+        final minSize = constraints.smallest.longestSide;
+        final spacing = minSize / 100;
 
-          final sizeMultiplier = constraints.findCardSizeMultiplier(
-            maxRows: axis == Axis.horizontal ? 4 : 7,
-            maxCols: axis == Axis.horizontal ? 10 : 2,
-            spacing: spacing,
-          );
+        final sizeMultiplier = constraints.findCardSizeMultiplier(
+          maxRows: axis == Axis.horizontal ? 4 : 7,
+          maxCols: axis == Axis.horizontal ? 10 : 2,
+          spacing: spacing,
+        );
 
-          final cardOffset = sizeMultiplier * 25;
+        final cardOffset = sizeMultiplier * 25;
 
-          final hiddenDeck = GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (state.value.deck.isEmpty) {
-                ref.read(audioServiceProvider).playRedraw();
-              } else {
-                ref.read(audioServiceProvider).playDraw();
-              }
-              state.value = state.value.withDrawOrRefresh();
-            },
-            child: CardDeck<SuitedCard, dynamic>.flipped(
-              value: 'deck',
-              values: state.value.deck,
-            ),
-          );
-          final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
-            value: 'revealed-deck',
-            values: state.value.revealedDeck,
-            amountExposed: drawAmount,
-            overlayOffset: Offset(0, 1) * cardOffset,
-            canMoveCardHere: (_) => false,
-            onCardPressed: (_) {
-              state.value =
-                  state.value.withAutoMoveFromDeck(onSuccess: () => ref.read(audioServiceProvider).playPlace());
-            },
-            canGrab: true,
-          );
+        final hiddenDeck = GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (state.value.deck.isEmpty) {
+              ref.read(audioServiceProvider).playRedraw();
+            } else {
+              ref.read(audioServiceProvider).playDraw();
+            }
+            state.value = state.value.withDrawOrRefresh();
+          },
+          child: CardDeck<SuitedCard, dynamic>.flipped(
+            value: 'deck',
+            values: state.value.deck,
+          ),
+        );
+        final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
+          value: 'revealed-deck',
+          values: state.value.revealedDeck,
+          amountExposed: drawAmount,
+          overlayOffset: Offset(0, 1) * cardOffset,
+          canMoveCardHere: (_) => false,
+          onCardPressed: (_) {
+            state.value = state.value.withAutoMoveFromDeck(onSuccess: () => ref.read(audioServiceProvider).playPlace());
+          },
+          canGrab: true,
+        );
 
-          final completedDecks = state.value.completedCards.entries
-              .map((entry) => CardDeck<SuitedCard, dynamic>(
-                    value: entry.key,
-                    values: entry.value,
-                    canGrab: true,
-                    onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(
-                      entry.key,
-                      onSuccess: () => ref.read(audioServiceProvider).playPlace(),
-                    ),
-                  ))
-              .toList();
+        final completedDecks = state.value.completedCards.entries
+            .map((entry) => CardDeck<SuitedCard, dynamic>(
+                  value: entry.key,
+                  values: entry.value,
+                  canGrab: true,
+                  onCardPressed: (card) => state.value = state.value.withAutoMoveFromCompleted(
+                    entry.key,
+                    onSuccess: () => ref.read(audioServiceProvider).playPlace(),
+                  ),
+                ))
+            .toList();
 
-          return CardGame<SuitedCard, dynamic>(
+        return DelayedAutoMoveListener(
+          stateGetter: () => state.value,
+          nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
+          onNewState: (newState) {
+            ref.read(audioServiceProvider).playPlace();
+            state.value = newState;
+          },
+          gameKey: gameKey,
+          child: CardGame<SuitedCard, dynamic>(
             gameKey: gameKey,
             style: playingCardStyle(
               sizeMultiplier: sizeMultiplier,
@@ -486,9 +486,9 @@ class Solitaire extends HookConsumerWidget {
                 ],
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
