@@ -1,7 +1,7 @@
 name: solitaire
 description: "Collection of card games"
 publish_to: 'none'
-version: 1.0.0+6
+version: 1.0.0+7
 
 environment:
   sdk: ^3.6.0
