@@ -27,35 +27,38 @@ class CustomizationDialog {
                   Row(
                     spacing: 8,
                     children: Background.values
-                        .map((background) => ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                        .map((background) => Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: AspectRatio(
+                              aspectRatio: 1,
                               child: Container(
-                                width: 64,
-                                height: 64,
-                                foregroundDecoration: background == saveState.background
-                                    ? BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.black,
-                                          width: 2,
+                                    foregroundDecoration: background == saveState.background
+                                        ? BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: Colors.black,
+                                              width: 2,
+                                            ),
+                                          )
+                                        : null,
+                                    child: Stack(
+                                      children: [
+                                        Positioned.fill(child: background.build()),
+                                        Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () => ref
+                                                .read(saveStateNotifierProvider.notifier)
+                                                .saveBackground(background: background),
+                                          ),
                                         ),
-                                      )
-                                    : null,
-                                child: Stack(
-                                  children: [
-                                    Positioned.fill(child: background.build()),
-                                    Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () => ref
-                                            .read(saveStateNotifierProvider.notifier)
-                                            .saveBackground(background: background),
-                                      ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ))
+                                  ),
+                            ),
+                          ),
+                        ))
                         .toList(),
                   ),
                   Divider(),
@@ -67,35 +70,38 @@ class CustomizationDialog {
                         .map((row) => Row(
                               spacing: 8,
                               children: row
-                                  .map((cardBack) => ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          width: 64,
-                                          height: 64,
-                                          foregroundDecoration: cardBack == saveState.cardBack
-                                              ? BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  border: Border.all(
-                                                    color: Colors.black,
-                                                    width: 2,
+                                  .map((cardBack) => Expanded(
+                                    child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: AspectRatio(
+                                            aspectRatio: 1,
+                                            child: Container(
+                                              foregroundDecoration: cardBack == saveState.cardBack
+                                                  ? BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      border: Border.all(
+                                                        color: Colors.black,
+                                                        width: 2,
+                                                      ),
+                                                    )
+                                                  : null,
+                                              child: Stack(
+                                                children: [
+                                                  Positioned.fill(child: cardBack.build()),
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    child: InkWell(
+                                                      onTap: () => ref
+                                                          .read(saveStateNotifierProvider.notifier)
+                                                          .saveCardBack(cardBack: cardBack),
+                                                    ),
                                                   ),
-                                                )
-                                              : null,
-                                          child: Stack(
-                                            children: [
-                                              Positioned.fill(child: cardBack.build()),
-                                              Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  onTap: () => ref
-                                                      .read(saveStateNotifierProvider.notifier)
-                                                      .saveCardBack(cardBack: cardBack),
-                                                ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
-                                      ))
+                                  ))
                                   .toList(),
                             ))
                         .toList(),
