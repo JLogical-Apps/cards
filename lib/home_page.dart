@@ -5,12 +5,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart' hide Provider;
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:solitaire/context/card_game_context.dart';
+import 'package:solitaire/dialogs/about_dialog.dart';
+import 'package:solitaire/dialogs/achievement_dialog.dart';
 import 'package:solitaire/dialogs/customization_dialog.dart';
 import 'package:solitaire/dialogs/settings_dialog.dart';
+import 'package:solitaire/dialogs/support_dialog.dart';
 import 'package:solitaire/game_view.dart';
 import 'package:solitaire/games/free_cell.dart';
 import 'package:solitaire/games/golf_solitaire.dart';
@@ -23,7 +25,6 @@ import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:utils/utils.dart';
 
 typedef GameDetails = ({
@@ -75,6 +76,13 @@ class HomePage extends ConsumerWidget {
             forceMaterialTransparency: true,
             actions: [
               Tooltip(
+                message: 'Achievements',
+                child: IconButton(
+                  icon: Icon(Symbols.military_tech, fill: 1),
+                  onPressed: () => AchievementDialog.show(context),
+                ),
+              ),
+              Tooltip(
                 message: 'Customization',
                 child: IconButton(
                   icon: Icon(Symbols.palette, fill: 1),
@@ -99,66 +107,12 @@ class HomePage extends ConsumerWidget {
                     ),
                     MenuItemButton(
                       leadingIcon: Icon(Icons.info),
-                      onPressed: () async {
-                        final packageVersion = await PackageInfo.fromPlatform();
-
-                        if (!context.mounted) {
-                          return;
-                        }
-
-                        showAboutDialog(
-                          context: context,
-                          applicationIcon: Image.asset('assets/cards.png', width: 80, height: 80),
-                          applicationName: 'Cards',
-                          applicationVersion: '${packageVersion.version}+${packageVersion.buildNumber}',
-                          children: [
-                            MarkdownBody(
-                              data:
-                                  'Built by [JLogical](https://www.jlogical.com).\n\nUses the custom-built [card_game](https://pub.dev/packages/card_game) package.\n\nFind the [source code on GitHub](https://github.com/JLogical-Apps/Solitaire).',
-                              onTapLink: (text, href, title) => launchUrlString(
-                                href!,
-                                mode: LaunchMode.externalApplication,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                      onPressed: () => SolitaireAboutDialog.show(context),
                       child: Text('About'),
                     ),
                     MenuItemButton(
                       leadingIcon: Icon(Icons.favorite),
-                      onPressed: () async {
-                        if (!context.mounted) {
-                          return;
-                        }
-
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Support'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                MarkdownBody(
-                                  data:
-                                      'All I ask for your support is to star the [Solitaire Github Repo](https://github.com/JLogical-Apps/Solitaire) and like the [card_game pub package](https://pub.dev/packages/card_game).',
-                                  onTapLink: (text, href, title) => launchUrlString(
-                                    href!,
-                                    mode: LaunchMode.externalApplication,
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    child: Text('Close'),
-                                    onPressed: () => Navigator.of(context).pop(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: () => SupportDialog.show(context),
                       child: Text('Support'),
                     ),
                   ],

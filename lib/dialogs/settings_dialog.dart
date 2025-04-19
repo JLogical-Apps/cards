@@ -20,44 +20,30 @@ class SettingsDialog {
           return HookBuilder(
             builder: (context) {
               final volumeState = useState(saveState.volume);
-              return AlertDialog(
+              return SimpleDialog(
                 title: Text('Settings'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      title: Text('Volume'),
-                      leading: Checkbox(
-                        value: volumeState.value > 0,
-                        onChanged: (newValue) async {
-                          if (newValue == true) {
-                            volumeState.value = 0.5;
-                            await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: 0.5);
-                          } else {
-                            volumeState.value = 0;
-                            await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: 0);
-                          }
-                          ref.read(audioServiceProvider).playPlace();
-                        },
-                      ),
-                      subtitle: Slider(
-                        value: volumeState.value,
-                        onChanged: (value) => volumeState.value = value,
-                        onChangeEnd: (value) async {
-                          await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: value);
-                          ref.read(audioServiceProvider).playPlace();
-                        },
-                      ),
+                children: [
+                  ListTile(
+                    title: Text('Volume'),
+                    subtitle: Slider(
+                      value: volumeState.value,
+                      onChanged: (value) => volumeState.value = value,
+                      onChangeEnd: (value) async {
+                        await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: value);
+                        ref.read(audioServiceProvider).playPlace();
+                      },
                     ),
-                    CheckboxListTile(
-                      title: Text('Enable Auto Move?'),
-                      value: saveState.enableAutoMove,
-                      onChanged: (newValue) => ref
-                          .read(saveStateNotifierProvider.notifier)
-                          .saveEnableAutoMove(enableAutoMove: newValue ?? false),
-                    ),
-                    SizedBox(height: 8),
-                    ElevatedButton(
+                  ),
+                  CheckboxListTile(
+                    title: Text('Enable Auto Move?'),
+                    value: saveState.enableAutoMove,
+                    onChanged: (newValue) => ref
+                        .read(saveStateNotifierProvider.notifier)
+                        .saveEnableAutoMove(enableAutoMove: newValue ?? false),
+                  ),
+                  SizedBox(height: 8),
+                  Center(
+                    child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
@@ -100,12 +86,18 @@ class SettingsDialog {
                       },
                       child: Text('Delete Data'),
                     ),
-                    TextButton(
-                      child: Text('Close'),
-                      onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: TextButton(
+                        child: Text('Close'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               );
             },
           );
