@@ -45,7 +45,7 @@ class SaveState {
         background = Background.green,
         cardBack = CardBack.redStripes,
         volume = 1,
-        enableAutoMove = false;
+        enableAutoMove = true;
 
   factory SaveState.fromJson(Map<String, dynamic> json) => _$SaveStateFromJson(json);
   Map<String, dynamic> toJson() => _$SaveStateToJson(this);
