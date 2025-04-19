@@ -27,11 +27,24 @@ class SettingsDialog {
                   children: [
                     ListTile(
                       title: Text('Volume'),
+                      leading: Checkbox(
+                        value: volumeState.value > 0,
+                        onChanged: (newValue) async {
+                          if (newValue == true) {
+                            volumeState.value = 0.5;
+                            await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: 0.5);
+                          } else {
+                            volumeState.value = 0;
+                            await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: 0);
+                          }
+                          ref.read(audioServiceProvider).playPlace();
+                        },
+                      ),
                       subtitle: Slider(
                         value: volumeState.value,
                         onChanged: (value) => volumeState.value = value,
-                        onChangeEnd: (value) {
-                          ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: value);
+                        onChangeEnd: (value) async {
+                          await ref.read(saveStateNotifierProvider.notifier).saveVolume(volume: value);
                           ref.read(audioServiceProvider).playPlace();
                         },
                       ),

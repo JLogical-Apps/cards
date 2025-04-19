@@ -55,6 +55,9 @@ Future<void> main() async {
         sliderTheme: SliderThemeData(
           overlayShape: SliderComponentShape.noOverlay,
         ),
+        listTileTheme: ListTileThemeData(
+          controlAffinity: ListTileControlAffinity.leading,
+        ),
       ),
       home: HomePage(),
     ),
