@@ -60,6 +60,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withAutoMoveEnabled(enableAutoMove: enableAutoMove));
   }
 
+  Future<void> saveCheatCode() async {
+    final saveState = await future;
+    await _saveState(saveState.withCheatCode());
+  }
+
   Future<void> deleteAllData() async {
     await _saveState(SaveState.empty());
   }

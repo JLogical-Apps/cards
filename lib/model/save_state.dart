@@ -2,8 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/difficulty_game_state.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/model/game_state.dart';
+import 'package:utils/utils.dart';
 
 part 'save_state.g.dart';
 
@@ -79,6 +81,20 @@ class SaveState {
   SaveState withCardBack({required CardBack cardBack}) => copyWith(cardBack: cardBack);
   SaveState withVolume({required double volume}) => copyWith(volume: volume);
   SaveState withAutoMoveEnabled({required bool enableAutoMove}) => copyWith(enableAutoMove: enableAutoMove);
+
+  SaveState withCheatCode() => copyWith(
+        gameStates: Game.values.mapToMap((value) => MapEntry(
+              value,
+              GameState(
+                states: Difficulty.values.mapToMap(
+                  (difficulty) => MapEntry(
+                    difficulty,
+                    DifficultyGameState(fastestGame: Duration(minutes: 5), gamesWon: 1),
+                  ),
+                ),
+              ),
+            )),
+      );
 
   SaveState copyWith({
     Map<Game, GameState>? gameStates,
