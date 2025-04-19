@@ -54,14 +54,22 @@ const _$DifficultyEnumMap = {
 
 const _$BackgroundEnumMap = {
   Background.green: 'green',
-  Background.blueGrey: 'blueGrey',
-  Background.brown: 'brown',
+  Background.blue: 'blue',
+  Background.slate: 'slate',
   Background.grey: 'grey',
 };
 
 const _$CardBackEnumMap = {
   CardBack.redStripes: 'redStripes',
-  CardBack.greyStripes: 'greyStripes',
-  CardBack.blueStripes: 'blueStripes',
-  CardBack.tealStripes: 'tealStripes',
+  CardBack.stoneStripes: 'stoneStripes',
+  CardBack.skyStripes: 'skyStripes',
+  CardBack.violetStripes: 'violetStripes',
+  CardBack.redPoly: 'redPoly',
+  CardBack.stonePoly: 'stonePoly',
+  CardBack.skyPoly: 'skyPoly',
+  CardBack.violetPoly: 'violetPoly',
+  CardBack.redSteps: 'redSteps',
+  CardBack.stoneSteps: 'stoneSteps',
+  CardBack.skySteps: 'skySteps',
+  CardBack.violetSteps: 'violetSteps',
 };

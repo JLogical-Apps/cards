@@ -3,8 +3,8 @@
 # Use the current directory (where the script is executed from)
 # This assumes you're running it from your project root
 
-# Process all SVG files in the assets/faces directory
-for svg_file in assets/faces/*.svg; do
+# Process all SVG files in the assets/ directory
+for svg_file in assets/*/*.svg; do
   # Check if the file exists and is a regular file
   if [ -f "$svg_file" ]; then
     echo "Processing: $svg_file"

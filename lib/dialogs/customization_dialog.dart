@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
+import 'package:solitaire/utils/iterable_extensions.dart';
 
 class CustomizationDialog {
   static Future<void> show(BuildContext context) async {
@@ -59,37 +60,43 @@ class CustomizationDialog {
                   ),
                   Divider(),
                   Text('Card Back', style: TextTheme.of(context).titleSmall),
-                  Row(
+                  Column(
                     spacing: 8,
                     children: CardBack.values
-                        .map((cardBack) => ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                width: 64,
-                                height: 64,
-                                foregroundDecoration: cardBack == saveState.cardBack
-                                    ? BoxDecoration(
+                        .batch(4)
+                        .map((row) => Row(
+                              spacing: 8,
+                              children: row
+                                  .map((cardBack) => ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.black,
-                                          width: 2,
+                                        child: Container(
+                                          width: 64,
+                                          height: 64,
+                                          foregroundDecoration: cardBack == saveState.cardBack
+                                              ? BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.black,
+                                                    width: 2,
+                                                  ),
+                                                )
+                                              : null,
+                                          child: Stack(
+                                            children: [
+                                              Positioned.fill(child: cardBack.build()),
+                                              Material(
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  onTap: () => ref
+                                                      .read(saveStateNotifierProvider.notifier)
+                                                      .saveCardBack(cardBack: cardBack),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      )
-                                    : null,
-                                child: Stack(
-                                  children: [
-                                    Positioned.fill(child: cardBack.build()),
-                                    Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () => ref
-                                            .read(saveStateNotifierProvider.notifier)
-                                            .saveCardBack(cardBack: cardBack),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                      ))
+                                  .toList(),
                             ))
                         .toList(),
                   ),
