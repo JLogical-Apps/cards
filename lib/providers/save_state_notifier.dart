@@ -55,6 +55,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withVolume(volume: volume));
   }
 
+  Future<void> saveEnableAutoMove({required bool enableAutoMove}) async {
+    final saveState = await future;
+    await _saveState(saveState.withAutoMoveEnabled(enableAutoMove: enableAutoMove));
+  }
+
   Future<void> deleteAllData() async {
     await _saveState(SaveState.empty());
   }

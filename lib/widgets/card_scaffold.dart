@@ -23,7 +23,7 @@ class CardScaffold extends HookConsumerWidget {
   final Game game;
   final Difficulty difficulty;
 
-  final Widget Function(BuildContext, BoxConstraints, CardBack, Object gameKey) builder;
+  final Widget Function(BuildContext, BoxConstraints, CardBack, bool autoMoveEnabled, Object gameKey) builder;
 
   final Function() onNewGame;
   final Function() onRestart;
@@ -191,6 +191,7 @@ class CardScaffold extends HookConsumerWidget {
                                 context,
                                 constraints,
                                 saveState.cardBack,
+                                saveState.enableAutoMove,
                                 startTimeState.value,
                               ),
                             ),

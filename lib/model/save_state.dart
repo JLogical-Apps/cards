@@ -25,6 +25,9 @@ class SaveState {
   @JsonKey(defaultValue: 1.0)
   final double volume;
 
+  @JsonKey(defaultValue: true)
+  final bool enableAutoMove;
+
   const SaveState({
     required this.gameStates,
     required this.lastGamePlayed,
@@ -32,6 +35,7 @@ class SaveState {
     required this.background,
     required this.cardBack,
     required this.volume,
+    required this.enableAutoMove,
   });
 
   const SaveState.empty()
@@ -40,7 +44,8 @@ class SaveState {
         lastPlayedGameDifficulties = const {},
         background = Background.green,
         cardBack = CardBack.redStripes,
-        volume = 1;
+        volume = 1,
+        enableAutoMove = false;
 
   factory SaveState.fromJson(Map<String, dynamic> json) => _$SaveStateFromJson(json);
   Map<String, dynamic> toJson() => _$SaveStateToJson(this);
@@ -73,6 +78,7 @@ class SaveState {
   SaveState withBackground({required Background background}) => copyWith(background: background);
   SaveState withCardBack({required CardBack cardBack}) => copyWith(cardBack: cardBack);
   SaveState withVolume({required double volume}) => copyWith(volume: volume);
+  SaveState withAutoMoveEnabled({required bool enableAutoMove}) => copyWith(enableAutoMove: enableAutoMove);
 
   SaveState copyWith({
     Map<Game, GameState>? gameStates,
@@ -81,6 +87,7 @@ class SaveState {
     Background? background,
     CardBack? cardBack,
     double? volume,
+    bool? enableAutoMove,
   }) {
     return SaveState(
       gameStates: gameStates ?? this.gameStates,
@@ -89,6 +96,7 @@ class SaveState {
       background: background ?? this.background,
       cardBack: cardBack ?? this.cardBack,
       volume: volume ?? this.volume,
+      enableAutoMove: enableAutoMove ?? this.enableAutoMove,
     );
   }
 }

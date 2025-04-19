@@ -27,9 +27,12 @@ class DelayedAutoMoveListener<T> extends HookWidget {
     final cardGameContext = context.watch<CardGameContext?>();
     final isPreview = cardGameContext?.isPreview ?? false;
 
+    if (!enabled || isPreview) {
+      return child;
+    }
+
     final isUserInteractingState = useState(false);
     useDelayedAutoMove(
-      enabled: !isPreview,
       isUserInteracting: isUserInteractingState.value,
       stateGetter: stateGetter,
       nextStateGetter: nextStateGetter,

@@ -36,6 +36,14 @@ class SettingsDialog {
                         },
                       ),
                     ),
+                    CheckboxListTile(
+                      title: Text('Enable Auto Move?'),
+                      value: saveState.enableAutoMove,
+                      onChanged: (newValue) => ref
+                          .read(saveStateNotifierProvider.notifier)
+                          .saveEnableAutoMove(enableAutoMove: newValue ?? false),
+                    ),
+                    SizedBox(height: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,

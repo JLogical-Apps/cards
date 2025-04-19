@@ -1,7 +1,6 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 void useDelayedAutoMove<T>({
-  bool enabled = true,
   required bool isUserInteracting,
   required Object gameKey,
   required T Function() stateGetter,
@@ -15,9 +14,7 @@ void useDelayedAutoMove<T>({
   final interactionStartTimeRef = useRef(DateTime.now());
 
   bool canAutoMove() =>
-      enabled &&
-      !DateTime.now().isBefore(gameStartTimeRef.value) &&
-      !DateTime.now().isBefore(interactionStartTimeRef.value);
+      !DateTime.now().isBefore(gameStartTimeRef.value) && !DateTime.now().isBefore(interactionStartTimeRef.value);
 
   Future<void> startAutoMoveSequence() async {
     while (canAutoMove()) {

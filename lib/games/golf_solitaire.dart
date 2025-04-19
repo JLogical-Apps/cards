@@ -101,7 +101,7 @@ class GolfSolitaire extends HookConsumerWidget {
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
-      builder: (context, constraints, cardBack, gameKey) {
+      builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;
         final spacing = minSize / 100;

@@ -601,7 +601,7 @@ class FreeCell extends HookConsumerWidget {
       onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(canAutoMove: true),
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
-      builder: (context, constraints, cardBack, gameKey) {
+      builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;
         final spacing = minSize / 100;
@@ -615,6 +615,7 @@ class FreeCell extends HookConsumerWidget {
         final cardOffset = sizeMultiplier * 25;
 
         return DelayedAutoMoveListener(
+          enabled: autoMoveEnabled,
           stateGetter: () => state.value,
           nextStateGetter: (state) => state.canAutoMove ? state.withAutoMove() : null,
           gameKey: gameKey,

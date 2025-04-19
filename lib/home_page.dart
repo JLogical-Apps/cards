@@ -84,6 +84,7 @@ class HomePage extends ConsumerWidget {
               Tooltip(
                 message: 'More',
                 child: MenuAnchor(
+                  alignmentOffset: Offset(-75, 0),
                   builder: (context, controller, child) {
                     return IconButton(
                       onPressed: () => controller.open(),
