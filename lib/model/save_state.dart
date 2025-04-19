@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:solitaire/model/achievement.dart';
 import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
@@ -12,6 +13,9 @@ part 'save_state.g.dart';
 @JsonSerializable()
 class SaveState {
   final Map<Game, GameState> gameStates;
+
+  @JsonKey(defaultValue: <Achievement>{})
+  final Set<Achievement> achievements;
 
   final Game? lastGamePlayed;
 
@@ -32,6 +36,7 @@ class SaveState {
 
   const SaveState({
     required this.gameStates,
+    required this.achievements,
     required this.lastGamePlayed,
     required this.lastPlayedGameDifficulties,
     required this.background,
@@ -42,6 +47,7 @@ class SaveState {
 
   const SaveState.empty()
       : gameStates = const {},
+        achievements = const {},
         lastGamePlayed = null,
         lastPlayedGameDifficulties = const {},
         background = Background.green,
@@ -81,6 +87,8 @@ class SaveState {
   SaveState withCardBack({required CardBack cardBack}) => copyWith(cardBack: cardBack);
   SaveState withVolume({required double volume}) => copyWith(volume: volume);
   SaveState withAutoMoveEnabled({required bool enableAutoMove}) => copyWith(enableAutoMove: enableAutoMove);
+  SaveState withAchievement({required Achievement achievement}) =>
+      copyWith(achievements: {...achievements, achievement});
 
   SaveState withCheatCode() => copyWith(
         gameStates: Game.values.mapToMap((value) => MapEntry(
@@ -94,10 +102,12 @@ class SaveState {
                 ),
               ),
             )),
+        achievements: Achievement.values.toSet(),
       );
 
   SaveState copyWith({
     Map<Game, GameState>? gameStates,
+    Set<Achievement>? achievements,
     Game? lastGamePlayed,
     Map<Game, Difficulty>? lastPlayedGameDifficulties,
     Background? background,
@@ -107,6 +117,7 @@ class SaveState {
   }) {
     return SaveState(
       gameStates: gameStates ?? this.gameStates,
+      achievements: achievements ?? this.achievements,
       lastGamePlayed: lastGamePlayed ?? this.lastGamePlayed,
       lastPlayedGameDifficulties: lastPlayedGameDifficulties ?? this.lastPlayedGameDifficulties,
       background: background ?? this.background,

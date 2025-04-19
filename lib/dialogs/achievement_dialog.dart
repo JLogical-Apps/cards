@@ -22,21 +22,21 @@ class AchievementDialog {
             contentPadding: EdgeInsets.zero,
             children: [
               ...Achievement.values.map((achievement) => ListTile(
-                title: Text(achievement.name),
-                subtitle: Text(achievement.description),
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox.square(
-                    dimension: 48,
-                    child: Random().nextBool()
-                        ? ColoredBox(
-                      color: Colors.grey,
-                      child: Icon(Icons.question_mark),
-                    )
-                        : CardBack.values.firstWhere((back) => back.achievementLock == achievement).build(),
-                  ),
-                ),
-              )),
+                    title: Text(achievement.name),
+                    subtitle: Text(achievement.description),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox.square(
+                        dimension: 48,
+                        child: saveState.achievements.contains(achievement)
+                            ? CardBack.values.firstWhere((back) => back.achievementLock == achievement).build()
+                            : ColoredBox(
+                                color: Colors.grey,
+                                child: Icon(Icons.question_mark),
+                              ),
+                      ),
+                    ),
+                  )),
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(

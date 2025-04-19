@@ -45,7 +45,8 @@ class CustomizationDialog {
                     .map((row) => Row(
                           spacing: 8,
                           children: row.map((cardBack) {
-                            final locked = cardBack.achievementLock != null;
+                            final locked = cardBack.achievementLock != null &&
+                                !saveState.achievements.contains(cardBack.achievementLock!);
                             return Expanded(
                               child: HookBuilder(builder: (context) {
                                 final tooltipKey = useMemoized(() => GlobalKey<TooltipState>());

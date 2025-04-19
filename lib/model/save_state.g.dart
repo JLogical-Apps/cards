@@ -11,6 +11,10 @@ SaveState _$SaveStateFromJson(Map<String, dynamic> json) => SaveState(
         (k, e) => MapEntry($enumDecode(_$GameEnumMap, k),
             GameState.fromJson(e as Map<String, dynamic>)),
       ),
+      achievements: (json['achievements'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$AchievementEnumMap, e))
+              .toSet() ??
+          {},
       lastGamePlayed:
           $enumDecodeNullable(_$GameEnumMap, json['lastGamePlayed']),
       lastPlayedGameDifficulties:
@@ -31,6 +35,8 @@ SaveState _$SaveStateFromJson(Map<String, dynamic> json) => SaveState(
 Map<String, dynamic> _$SaveStateToJson(SaveState instance) => <String, dynamic>{
       'gameStates':
           instance.gameStates.map((k, e) => MapEntry(_$GameEnumMap[k]!, e)),
+      'achievements':
+          instance.achievements.map((e) => _$AchievementEnumMap[e]!).toList(),
       'lastGamePlayed': _$GameEnumMap[instance.lastGamePlayed],
       'lastPlayedGameDifficulties': instance.lastPlayedGameDifficulties
           .map((k, e) => MapEntry(_$GameEnumMap[k]!, _$DifficultyEnumMap[e]!)),
@@ -44,6 +50,20 @@ const _$GameEnumMap = {
   Game.golf: 'golf',
   Game.klondike: 'klondike',
   Game.freeCell: 'freeCell',
+};
+
+const _$AchievementEnumMap = {
+  Achievement.speedDealer: 'speedDealer',
+  Achievement.grandSlam: 'grandSlam',
+  Achievement.suitedUp: 'suitedUp',
+  Achievement.deckWhisperer: 'deckWhisperer',
+  Achievement.fullHouse: 'fullHouse',
+  Achievement.holeInOne: 'holeInOne',
+  Achievement.stackTheDeck: 'stackTheDeck',
+  Achievement.royalFlush: 'royalFlush',
+  Achievement.cleanSweep: 'cleanSweep',
+  Achievement.perfectPlanning: 'perfectPlanning',
+  Achievement.aceUpYourSleeve: 'aceUpYourSleeve',
 };
 
 const _$DifficultyEnumMap = {
