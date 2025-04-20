@@ -6,6 +6,7 @@ import 'package:solitaire/games/golf_solitaire.dart';
 import 'package:solitaire/games/solitaire.dart';
 import 'package:solitaire/main.dart';
 import 'package:solitaire/model/achievement.dart';
+import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
@@ -106,8 +107,19 @@ class AchievementService {
     final context = scaffoldMessengerKey.currentContext;
     if (context != null) {
       scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
-
-        content: Text('Achievement "${achievement.name}" Unlocked!'),
+        content: Row(
+          spacing: 16,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox.square(
+                dimension: 48,
+                child: CardBack.values.firstWhere((back) => back.achievementLock == achievement).build(),
+              ),
+            ),
+            Text('Achievement "${achievement.name}" Unlocked!'),
+          ],
+        ),
       ));
     }
   }
