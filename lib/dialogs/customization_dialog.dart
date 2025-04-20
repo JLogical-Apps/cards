@@ -22,19 +22,22 @@ class CustomizationDialog {
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               Text('Background', style: TextTheme.of(context).titleMedium),
-              Row(
-                spacing: 8,
-                children: Background.values
-                    .map((background) => Expanded(
-                          child: _customizationSquare(
-                            context,
-                            child: background.build(),
-                            onPressed: () =>
-                                ref.read(saveStateNotifierProvider.notifier).saveBackground(background: background),
-                            selected: background == saveState.background,
-                          ),
-                        ))
-                    .toList(),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 400),
+                child: Row(
+                  spacing: 8,
+                  children: Background.values
+                      .map((background) => Expanded(
+                            child: _customizationSquare(
+                              context,
+                              child: background.build(),
+                              onPressed: () =>
+                                  ref.read(saveStateNotifierProvider.notifier).saveBackground(background: background),
+                              selected: background == saveState.background,
+                            ),
+                          ))
+                      .toList(),
+                ),
               ),
               Divider(),
               Text('Card Back', style: TextTheme.of(context).titleMedium),
