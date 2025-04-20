@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/achievement_service.dart';
 import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
@@ -53,6 +54,7 @@ class FreeCellState {
   final List<SuitedCard?> freeCells;
   final Map<CardSuit, List<SuitedCard>> foundationCards;
 
+  final bool usedUndo;
   final bool canAutoMove;
   final List<FreeCellState> history;
 
@@ -60,6 +62,7 @@ class FreeCellState {
     required this.tableauCards,
     required this.freeCells,
     required this.foundationCards,
+    required this.usedUndo,
     required this.canAutoMove,
     required this.history,
   });
@@ -72,9 +75,8 @@ class FreeCellState {
       deck = deck.where((card) => card.value != AceSuitedCardValue()).toList();
     }
 
-    // In Free Cell, we start with 8 columns (tableau)
     final tableauCards = List.generate(8, (i) {
-      final cardsPerColumn = i < 4 ? 7 : 6; // First 4 columns have 7 cards, last 4 have 6
+      final cardsPerColumn = i < 4 ? 7 : 6;
       final cardsToTake = cardsPerColumn - (acesAtBottom && i < 4 ? 1 : 0);
 
       final column = deck.take(cardsToTake).toList();
@@ -91,6 +93,7 @@ class FreeCellState {
       tableauCards: tableauCards,
       freeCells: List.filled(freeCellCount, null),
       foundationCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
+      usedUndo: false,
       history: [],
       canAutoMove: true,
     );
@@ -98,37 +101,29 @@ class FreeCellState {
 
   int getCardValue(SuitedCard card) => SuitedCardValueMapper.aceAsLowest.getValue(card);
 
-  // Calculate how many cards can be moved at once based on free cells and empty tableaus
   int get maxMoveSize {
     final emptyCells = freeCells.where((cell) => cell == null).length;
     final emptyTableaux = tableauCards.where((column) => column.isEmpty).length;
 
-    // Basic formula: (emptyCells + 1) * 2^emptyTableaux
     return (emptyCells + 1) * pow(2, emptyTableaux).toInt();
   }
 
-  // Calculate the maximum movable stack size for a specific move
   int getMaxMoveSizeForTarget(int targetColumn) {
     final emptyCells = freeCells.where((cell) => cell == null).length;
     final emptyTableauxCount = tableauCards.where((column) => column.isEmpty).length;
 
-    // If target is an empty column, we need to exclude it from our empty tableaux count
-    final effectiveEmptyTableauxCount = tableauCards[targetColumn].isEmpty
-        ? max(0, emptyTableauxCount - 1) // Exclude the destination column if it's empty
-        : emptyTableauxCount;
+    final effectiveEmptyTableauxCount =
+        tableauCards[targetColumn].isEmpty ? max(0, emptyTableauxCount - 1) : emptyTableauxCount;
 
-    // Apply the FreeCell formula
     return (emptyCells + 1) * pow(2, effectiveEmptyTableauxCount).toInt();
   }
 
-  // Check if a card can be added to foundation
   bool canAddToFoundation(SuitedCard card) {
     final foundationSuitCards = foundationCards[card.suit]!;
     return (foundationSuitCards.isEmpty && card.value == AceSuitedCardValue()) ||
         (foundationSuitCards.isNotEmpty && getCardValue(foundationSuitCards.last) + 1 == getCardValue(card));
   }
 
-  // Check if a sequence of cards is valid (alternating colors, descending values)
   bool isValidSequence(List<SuitedCard> cards) {
     if (cards.isEmpty) return true;
 
@@ -144,24 +139,18 @@ class FreeCellState {
     return true;
   }
 
-  // Check if cards can be moved to tableau
   bool canMoveToTableau(List<SuitedCard> cards, int targetColumn) {
     if (cards.isEmpty) return false;
 
-    // Calculate max move size for this specific target
     final effectiveMaxMoveSize = getMaxMoveSizeForTarget(targetColumn);
 
-    // First check if move size is allowed
     if (cards.length > effectiveMaxMoveSize) {
       return false;
     }
 
-    // Then check if target column is empty or has a valid target card
     if (tableauCards[targetColumn].isEmpty) {
-      // Any card can be placed in an empty column (size already checked)
       return true;
     } else {
-      // For non-empty columns, check if move is valid
       final targetTopCard = tableauCards[targetColumn].last;
       final movingBottomCard = cards.first;
 
@@ -170,23 +159,18 @@ class FreeCellState {
     }
   }
 
-  // Check if a card can be moved to a free cell
   bool canMoveToFreeCell(SuitedCard card, int cellIndex) => freeCells[cellIndex] == null;
 
-  // Move cards from one tableau column to another
   FreeCellState withMoveFromTableauToTableau(List<SuitedCard> cards, int fromColumn, int toColumn) {
-    // Double-check using the canMoveToTableau method
     if (!canMoveToTableau(cards, toColumn)) {
       return this;
     }
 
     final newTableauCards = [...tableauCards];
 
-    // Remove cards from source column
     newTableauCards[fromColumn] =
         newTableauCards[fromColumn].sublist(0, newTableauCards[fromColumn].length - cards.length);
 
-    // Add cards to destination column
     newTableauCards[toColumn] = [...newTableauCards[toColumn], ...cards];
 
     return copyWith(
@@ -195,7 +179,6 @@ class FreeCellState {
     );
   }
 
-  // Move a card from tableau to free cell
   FreeCellState withMoveFromTableauToFreeCell(int fromColumn, int toCellIndex) {
     if (tableauCards[fromColumn].isEmpty || freeCells[toCellIndex] != null) {
       return this;
@@ -215,7 +198,6 @@ class FreeCellState {
     );
   }
 
-  // Move a card from free cell to tableau
   FreeCellState withMoveFromFreeCellToTableau(int fromCellIndex, int toColumn) {
     final card = freeCells[fromCellIndex];
 
@@ -240,7 +222,6 @@ class FreeCellState {
     );
   }
 
-  // Move a card from tableau to foundation
   FreeCellState withMoveFromTableauToFoundation(int fromColumn) {
     if (tableauCards[fromColumn].isEmpty) {
       return this;
@@ -267,7 +248,6 @@ class FreeCellState {
     );
   }
 
-  // Move a card from free cell to foundation
   FreeCellState withMoveFromFreeCellToFoundation(int fromCellIndex) {
     final card = freeCells[fromCellIndex];
 
@@ -290,7 +270,6 @@ class FreeCellState {
     );
   }
 
-  // Move a card from one free cell to another free cell
   FreeCellState withMoveFromFreeCellToFreeCell(int fromCellIndex, int toCellIndex) {
     final card = freeCells[fromCellIndex];
 
@@ -308,7 +287,6 @@ class FreeCellState {
     );
   }
 
-// Move a card from foundation to tableau
   FreeCellState withMoveFromFoundationToTableau(CardSuit suit, int toColumn) {
     final foundationPile = foundationCards[suit]!;
 
@@ -333,43 +311,35 @@ class FreeCellState {
     return copyWith(
       tableauCards: newTableauCards,
       foundationCards: newFoundationCards,
-      canAutoMove: false, // Set to false to prevent auto-move from moving it back
+      canAutoMove: false,
     );
   }
 
-  // Update the withMove method to use the new group value types
   FreeCellState withMove(List<SuitedCard> cards, GroupValue fromValue, GroupValue toValue) {
-    // Move from tableau to tableau
     if (fromValue is TableauGroupValue && toValue is TableauGroupValue) {
       return withMoveFromTableauToTableau(cards, fromValue.columnIndex, toValue.columnIndex);
     }
 
-    // Move from tableau to free cell
     if (fromValue is TableauGroupValue && toValue is FreeCellGroupValue) {
       return withMoveFromTableauToFreeCell(fromValue.columnIndex, toValue.cellIndex);
     }
 
-    // Move from free cell to tableau
     if (fromValue is FreeCellGroupValue && toValue is TableauGroupValue) {
       return withMoveFromFreeCellToTableau(fromValue.cellIndex, toValue.columnIndex);
     }
 
-    // Move from free cell to free cell
     if (fromValue is FreeCellGroupValue && toValue is FreeCellGroupValue) {
       return withMoveFromFreeCellToFreeCell(fromValue.cellIndex, toValue.cellIndex);
     }
 
-    // Move from tableau to foundation
     if (fromValue is TableauGroupValue && toValue is FoundationGroupValue) {
       return withMoveFromTableauToFoundation(fromValue.columnIndex);
     }
 
-    // Move from free cell to foundation
     if (fromValue is FreeCellGroupValue && toValue is FoundationGroupValue) {
       return withMoveFromFreeCellToFoundation(fromValue.cellIndex);
     }
 
-    // Move from foundation to tableau
     if (fromValue is FoundationGroupValue && toValue is TableauGroupValue) {
       return withMoveFromFoundationToTableau(fromValue.suit, toValue.columnIndex);
     }
@@ -382,25 +352,19 @@ class FreeCellState {
       FreeCellGroupValue? freeCellGroup,
       FoundationGroupValue? foundationGroup,
       int? cardIndexInTableau}) {
-    // 1. If a specific tableau column was clicked
     if (tableauGroup != null) {
       final column = tableauCards[tableauGroup.columnIndex];
 
-      // Empty column - nothing to do
       if (column.isEmpty) {
         return null;
       }
 
-      // If a specific card in the stack was clicked (not just the top card)
       if (cardIndexInTableau != null && cardIndexInTableau < column.length - 1) {
-        // Check if the subsequence is valid and within move size limits
         final subsequence = column.sublist(cardIndexInTableau);
         if (isValidSequence(subsequence) && subsequence.length <= maxMoveSize) {
-          // Collect all valid destinations, separating empty and non-empty columns
           List<int> validNonEmptyColumns = [];
           List<int> validEmptyColumns = [];
 
-          // Try to move this stack to each other tableau column
           for (int i = 0; i < tableauCards.length; i++) {
             if (i != tableauGroup.columnIndex && canMoveToTableau(subsequence, i)) {
               if (tableauCards[i].isEmpty) {
@@ -411,28 +375,21 @@ class FreeCellState {
             }
           }
 
-          // Prioritize non-empty columns
           if (validNonEmptyColumns.isNotEmpty) {
             return withMoveFromTableauToTableau(subsequence, tableauGroup.columnIndex, validNonEmptyColumns.first);
-          }
-          // Fall back to empty columns if necessary
-          else if (validEmptyColumns.isNotEmpty) {
+          } else if (validEmptyColumns.isNotEmpty) {
             return withMoveFromTableauToTableau(subsequence, tableauGroup.columnIndex, validEmptyColumns.first);
           }
         }
         return null;
       }
 
-      // For top card clicks, we'll also prioritize non-empty columns
       final card = column.last;
 
-      // 1a. Try to move to foundation if possible
       if (canAddToFoundation(card)) {
         return withMoveFromTableauToFoundation(tableauGroup.columnIndex);
       }
 
-      // 1b. Try to move to another tableau column
-      // Collect valid non-empty and empty destinations
       List<int> validNonEmptyColumns = [];
       List<int> validEmptyColumns = [];
 
@@ -446,36 +403,27 @@ class FreeCellState {
         }
       }
 
-      // Prioritize non-empty columns
       if (validNonEmptyColumns.isNotEmpty) {
         return withMoveFromTableauToTableau([card], tableauGroup.columnIndex, validNonEmptyColumns.first);
-      }
-      // Fall back to empty columns
-      else if (validEmptyColumns.isNotEmpty) {
+      } else if (validEmptyColumns.isNotEmpty) {
         return withMoveFromTableauToTableau([card], tableauGroup.columnIndex, validEmptyColumns.first);
       }
 
-      // 1c. Try to move to a free cell if possible
       for (int i = 0; i < freeCells.length; i++) {
         if (freeCells[i] == null) {
           return withMoveFromTableauToFreeCell(tableauGroup.columnIndex, i);
         }
       }
-    }
-
-    // 2. If a specific free cell was clicked
-    else if (freeCellGroup != null) {
+    } else if (freeCellGroup != null) {
       final card = freeCells[freeCellGroup.cellIndex];
       if (card == null) {
         return null;
       }
 
-      // 2a. Try to move to foundation if possible
       if (canAddToFoundation(card)) {
         return withMoveFromFreeCellToFoundation(freeCellGroup.cellIndex);
       }
 
-      // 2b. Try to move to tableau if possible (with prioritization)
       List<int> validNonEmptyColumns = [];
       List<int> validEmptyColumns = [];
 
@@ -489,18 +437,12 @@ class FreeCellState {
         }
       }
 
-      // Prioritize non-empty columns
       if (validNonEmptyColumns.isNotEmpty) {
         return withMoveFromFreeCellToTableau(freeCellGroup.cellIndex, validNonEmptyColumns.first);
-      }
-      // Fall back to empty columns
-      else if (validEmptyColumns.isNotEmpty) {
+      } else if (validEmptyColumns.isNotEmpty) {
         return withMoveFromFreeCellToTableau(freeCellGroup.cellIndex, validEmptyColumns.first);
       }
-    }
-
-    // 3. If a foundation pile was clicked
-    else if (foundationGroup != null) {
+    } else if (foundationGroup != null) {
       final foundationPile = foundationCards[foundationGroup.suit]!;
       if (foundationPile.isEmpty) {
         return null;
@@ -508,29 +450,21 @@ class FreeCellState {
 
       final card = foundationPile.last;
 
-      // 3a. Try to move to tableau if possible
       for (int i = 0; i < tableauCards.length; i++) {
         if (canMoveToTableau([card], i)) {
           return withMoveFromFoundationToTableau(foundationGroup.suit, i);
         }
       }
-    }
-
-    // 4. Global auto-move logic (no specific click)
-    else {
-      // Find the lowest foundation value across all suits
+    } else {
       final lowestFoundationValue =
           foundationCards.values.map((cards) => cards.isEmpty ? 0 : getCardValue(cards.last)).reduce(min);
 
-      // Define safe auto-move threshold (lowest foundation value + 2)
       final safeAutoMoveThreshold = lowestFoundationValue + 2;
 
-      // Check if a card is safe to auto-move to foundation
       bool isSafeToAutoMove(SuitedCard card) {
         return canAddToFoundation(card) && getCardValue(card) <= safeAutoMoveThreshold;
       }
 
-      // Try to move from tableau to foundation (only if safe)
       for (int i = 0; i < tableauCards.length; i++) {
         if (tableauCards[i].isNotEmpty) {
           final card = tableauCards[i].last;
@@ -540,7 +474,6 @@ class FreeCellState {
         }
       }
 
-      // Try to move from free cells to foundation (only if safe)
       for (int i = 0; i < freeCells.length; i++) {
         final card = freeCells[i];
         if (card != null && isSafeToAutoMove(card)) {
@@ -552,18 +485,17 @@ class FreeCellState {
     return null;
   }
 
-  // Undo move
   FreeCellState withUndo() {
-    return history.last.copyWith(canAutoMove: false, saveNewStateToHistory: false);
+    return history.last.copyWith(canAutoMove: false, saveNewStateToHistory: false, usedUndo: true);
   }
 
-  // Check if game is won
   bool get isVictory => foundationCards.values.every((cards) => cards.length == 13);
 
   FreeCellState copyWith({
     List<List<SuitedCard>>? tableauCards,
     List<SuitedCard?>? freeCells,
     Map<CardSuit, List<SuitedCard>>? foundationCards,
+    bool? usedUndo,
     bool? canAutoMove,
     bool saveNewStateToHistory = true,
   }) {
@@ -571,6 +503,7 @@ class FreeCellState {
       tableauCards: tableauCards ?? this.tableauCards,
       freeCells: freeCells ?? this.freeCells,
       foundationCards: foundationCards ?? this.foundationCards,
+      usedUndo: usedUndo ?? this.usedUndo,
       canAutoMove: canAutoMove ?? this.canAutoMove,
       history: history + [if (saveNewStateToHistory) this],
     );
@@ -601,6 +534,9 @@ class FreeCell extends HookConsumerWidget {
       onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(canAutoMove: true),
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
+      onVictory: () => ref
+          .read(achievementServiceProvider)
+          .checkFreeCellCompletionAchievements(difficulty: difficulty, state: state.value),
       builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;
@@ -654,7 +590,6 @@ class FreeCell extends HookConsumerWidget {
                                   state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i));
                             },
                             onCardPressed: (card) {
-                              // Use auto-move logic for free cell clicks
                               final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
                               if (newState != null) {
                                 ref.read(audioServiceProvider).playPlace();
@@ -680,7 +615,6 @@ class FreeCell extends HookConsumerWidget {
                                   .withMove(move.cardValues, move.fromGroupValue, FoundationGroupValue(entry.key));
                             },
                             onCardPressed: (card) {
-                              // Use auto-move logic for foundation card clicks
                               final newState = state.value.withAutoMove(
                                 foundationGroup: FoundationGroupValue(entry.key),
                               );
@@ -693,8 +627,6 @@ class FreeCell extends HookConsumerWidget {
                     ],
                   ),
                   SizedBox.square(dimension: spacing),
-
-                  // Tableau
                   Expanded(
                     child: Flex(
                       direction: axis,
@@ -711,8 +643,6 @@ class FreeCell extends HookConsumerWidget {
                             maxGrabStackSize: state.value.maxMoveSize,
                             values: columnCards,
                             canCardBeGrabbed: (index, card) {
-                              // Only check if this card and all cards below it form a valid sequence
-                              // Don't check move size limits here - we want to allow dragging
                               final subsequence = columnCards.sublist(index);
                               return state.value.isValidSequence(subsequence);
                             },
@@ -725,7 +655,6 @@ class FreeCell extends HookConsumerWidget {
                             onCardPressed: (card) {
                               final cardIndex = columnCards.indexOf(card);
 
-                              // Try to auto-move the card and any valid sequence below it
                               final newState = state.value
                                   .withAutoMove(tableauGroup: TableauGroupValue(i), cardIndexInTableau: cardIndex);
 
@@ -748,7 +677,6 @@ class FreeCell extends HookConsumerWidget {
     );
   }
 
-  // Helper function for foundation validation
   static bool canAddToFoundation(SuitedCard card, CardSuit suit, List<SuitedCard> foundationPile) {
     if (card.suit != suit) return false;
 

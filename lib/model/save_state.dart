@@ -22,6 +22,9 @@ class SaveState {
   @JsonKey(defaultValue: {})
   final Map<Game, Difficulty> lastPlayedGameDifficulties;
 
+  @JsonKey(defaultValue: 0)
+  final int winStreak;
+
   @JsonKey(defaultValue: Background.green)
   final Background background;
 
@@ -39,6 +42,7 @@ class SaveState {
     required this.achievements,
     required this.lastGamePlayed,
     required this.lastPlayedGameDifficulties,
+    required this.winStreak,
     required this.background,
     required this.cardBack,
     required this.volume,
@@ -50,6 +54,7 @@ class SaveState {
         achievements = const {},
         lastGamePlayed = null,
         lastPlayedGameDifficulties = const {},
+        winStreak = 0,
         background = Background.green,
         cardBack = CardBack.redStripes,
         volume = 1,
@@ -64,24 +69,24 @@ class SaveState {
     required Game game,
     required Difficulty difficulty,
     required Duration duration,
-  }) {
-    return copyWith(
-      gameStates: {
-        ...gameStates,
-        game: getOrDefault(game).withCompleted(difficulty: difficulty, duration: duration),
-      },
-    );
-  }
+  }) =>
+      copyWith(
+        gameStates: {
+          ...gameStates,
+          game: getOrDefault(game).withCompleted(difficulty: difficulty, duration: duration),
+        },
+        winStreak: winStreak + 1,
+      );
 
-  SaveState withGameStarted({required Game game, required Difficulty difficulty}) {
-    return copyWith(
-      lastGamePlayed: game,
-      lastPlayedGameDifficulties: {
-        ...lastPlayedGameDifficulties,
-        game: difficulty,
-      },
-    );
-  }
+  SaveState withGameStarted({required Game game, required Difficulty difficulty}) => copyWith(
+        lastGamePlayed: game,
+        lastPlayedGameDifficulties: {
+          ...lastPlayedGameDifficulties,
+          game: difficulty,
+        },
+      );
+
+  SaveState withCloseOrRestart() => copyWith(winStreak: 0);
 
   SaveState withBackground({required Background background}) => copyWith(background: background);
   SaveState withCardBack({required CardBack cardBack}) => copyWith(cardBack: cardBack);
@@ -102,7 +107,7 @@ class SaveState {
                 ),
               ),
             )),
-        achievements: Achievement.values.toSet(),
+        // achievements: Achievement.values.toSet(),
       );
 
   SaveState copyWith({
@@ -110,6 +115,7 @@ class SaveState {
     Set<Achievement>? achievements,
     Game? lastGamePlayed,
     Map<Game, Difficulty>? lastPlayedGameDifficulties,
+    int? winStreak,
     Background? background,
     CardBack? cardBack,
     double? volume,
@@ -120,6 +126,7 @@ class SaveState {
       achievements: achievements ?? this.achievements,
       lastGamePlayed: lastGamePlayed ?? this.lastGamePlayed,
       lastPlayedGameDifficulties: lastPlayedGameDifficulties ?? this.lastPlayedGameDifficulties,
+      winStreak: winStreak ?? this.winStreak,
       background: background ?? this.background,
       cardBack: cardBack ?? this.cardBack,
       volume: volume ?? this.volume,

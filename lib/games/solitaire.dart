@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/group/exposed_deck.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/achievement_service.dart';
 import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
@@ -26,6 +27,8 @@ class SolitaireState {
   final List<SuitedCard> revealedDeck;
   final Map<CardSuit, List<SuitedCard>> completedCards;
 
+  final bool usedUndo;
+  final bool restartedDeck;
   final bool canAutoMove;
   final List<SolitaireState> history;
 
@@ -36,6 +39,8 @@ class SolitaireState {
     required this.deck,
     required this.revealedDeck,
     required this.completedCards,
+    required this.usedUndo,
+    required this.restartedDeck,
     required this.canAutoMove,
     required this.history,
   });
@@ -76,6 +81,8 @@ class SolitaireState {
       revealedDeck: [],
       completedCards: Map.fromEntries(CardSuit.values.map((suit) => MapEntry(suit, []))),
       history: [],
+      usedUndo: false,
+      restartedDeck: false,
       canAutoMove: true,
       drawAmount: drawAmount,
     );
@@ -83,7 +90,12 @@ class SolitaireState {
 
   SolitaireState withDrawOrRefresh() {
     return deck.isEmpty
-        ? copyWith(deck: revealedDeck.reversed.toList(), revealedDeck: [], canAutoMove: true)
+        ? copyWith(
+            deck: revealedDeck.reversed.toList(),
+            revealedDeck: [],
+            canAutoMove: true,
+            restartedDeck: true,
+          )
         : copyWith(
             deck: deck.sublist(0, max(0, deck.length - drawAmount)),
             revealedDeck: revealedDeck + deck.reversed.take(drawAmount).toList(),
@@ -260,7 +272,11 @@ class SolitaireState {
   }
 
   SolitaireState withUndo() {
-    return history.last.copyWith(canAutoMove: false, saveNewStateToHistory: false);
+    return history.last.copyWith(
+      canAutoMove: false,
+      saveNewStateToHistory: false,
+      usedUndo: true,
+    );
   }
 
   SolitaireState? withAutoMove() {
@@ -301,6 +317,8 @@ class SolitaireState {
     List<SuitedCard>? deck,
     List<SuitedCard>? revealedDeck,
     Map<CardSuit, List<SuitedCard>>? completedCards,
+    bool? usedUndo,
+    bool? restartedDeck,
     bool? canAutoMove,
     bool saveNewStateToHistory = true,
   }) {
@@ -311,6 +329,8 @@ class SolitaireState {
       revealedDeck: revealedDeck ?? this.revealedDeck,
       completedCards: completedCards ?? this.completedCards,
       drawAmount: drawAmount,
+      usedUndo: usedUndo ?? this.usedUndo,
+      restartedDeck: restartedDeck ?? this.restartedDeck,
       canAutoMove: canAutoMove ?? this.canAutoMove,
       history: history + [if (saveNewStateToHistory) this],
     );
@@ -335,14 +355,21 @@ class Solitaire extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
+    useOnListenableChange(
+      state,
+      () => ref.read(achievementServiceProvider).checkSolitaireMoveAchievements(state: state.value),
+    );
 
     return CardScaffold(
       game: Game.klondike,
       difficulty: difficulty,
       onNewGame: () => state.value = initialState,
-      onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
+      onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(usedUndo: false),
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
+      onVictory: () => ref
+          .read(achievementServiceProvider)
+          .checkSolitaireCompletionAchievements(state: state.value, difficulty: difficulty),
       builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;

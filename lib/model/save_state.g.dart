@@ -23,6 +23,7 @@ SaveState _$SaveStateFromJson(Map<String, dynamic> json) => SaveState(
                     $enumDecode(_$DifficultyEnumMap, e)),
               ) ??
               {},
+      winStreak: (json['winStreak'] as num?)?.toInt() ?? 0,
       background:
           $enumDecodeNullable(_$BackgroundEnumMap, json['background']) ??
               Background.green,
@@ -40,6 +41,7 @@ Map<String, dynamic> _$SaveStateToJson(SaveState instance) => <String, dynamic>{
       'lastGamePlayed': _$GameEnumMap[instance.lastGamePlayed],
       'lastPlayedGameDifficulties': instance.lastPlayedGameDifficulties
           .map((k, e) => MapEntry(_$GameEnumMap[k]!, _$DifficultyEnumMap[e]!)),
+      'winStreak': instance.winStreak,
       'background': _$BackgroundEnumMap[instance.background]!,
       'cardBack': _$CardBackEnumMap[instance.cardBack]!,
       'volume': instance.volume,
@@ -58,7 +60,7 @@ const _$AchievementEnumMap = {
   Achievement.suitedUp: 'suitedUp',
   Achievement.deckWhisperer: 'deckWhisperer',
   Achievement.fullHouse: 'fullHouse',
-  Achievement.holeInOne: 'holeInOne',
+  Achievement.birdie: 'birdie',
   Achievement.stackTheDeck: 'stackTheDeck',
   Achievement.royalFlush: 'royalFlush',
   Achievement.cleanSweep: 'cleanSweep',

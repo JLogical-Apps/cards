@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
+import 'package:solitaire/services/achievement_service.dart';
 import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
@@ -15,6 +16,8 @@ class GolfSolitaireState {
   final List<List<SuitedCard>> cards;
   final List<SuitedCard> deck;
   final List<SuitedCard> completedCards;
+  final int chain;
+
   final bool canRollover;
 
   final List<GolfSolitaireState> history;
@@ -23,6 +26,7 @@ class GolfSolitaireState {
     required this.cards,
     required this.deck,
     required this.completedCards,
+    required this.chain,
     required this.canRollover,
     required this.history,
   });
@@ -46,6 +50,7 @@ class GolfSolitaireState {
       cards: cards,
       deck: deck,
       completedCards: completedCards,
+      chain: 0,
       canRollover: canRollover,
       history: [],
     );
@@ -61,6 +66,7 @@ class GolfSolitaireState {
         cards: cards.map((column) => [...column]..remove(card)).toList(),
         deck: deck,
         completedCards: completedCards + [card],
+        chain: chain + 1,
         canRollover: canRollover,
         history: history + [this],
       );
@@ -71,6 +77,7 @@ class GolfSolitaireState {
         cards: cards,
         deck: deck.sublist(0, deck.length - 1),
         completedCards: completedCards + [deck.last],
+        chain: 0,
         canRollover: canRollover,
         history: history + [this],
       );
@@ -93,6 +100,10 @@ class GolfSolitaire extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
+    useOnListenableChange(
+      state,
+      () => ref.read(achievementServiceProvider).checkGolfSolitaireMoveAchievements(state: state.value),
+    );
 
     return CardScaffold(
       game: Game.golf,
@@ -101,6 +112,8 @@ class GolfSolitaire extends HookConsumerWidget {
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
+      onVictory: () =>
+          ref.read(achievementServiceProvider).checkGolfSolitaireCompletionAchievements(state: state.value),
       builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;

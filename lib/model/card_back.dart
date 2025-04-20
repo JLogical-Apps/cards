@@ -13,7 +13,7 @@ enum CardBack {
   violetStripes(assetName: 'back', fallbackColor: ColorLibrary.violet400, achievementLock: Achievement.suitedUp),
   redPoly(assetName: 'red-poly', fallbackColor: ColorLibrary.red400, achievementLock: Achievement.deckWhisperer),
   stonePoly(assetName: 'stone-poly', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.fullHouse),
-  skyPoly(assetName: 'sky-poly', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.holeInOne),
+  skyPoly(assetName: 'sky-poly', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.birdie),
   violetPoly(
     assetName: 'violet-poly',
     fallbackColor: ColorLibrary.violet400,

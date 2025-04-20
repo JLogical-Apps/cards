@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:solitaire/model/achievement.dart';
 import 'package:solitaire/model/background.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
@@ -40,6 +41,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withGameStarted(game: game, difficulty: difficulty));
   }
 
+  Future<void> saveGameCloseOrRestart() async {
+    final saveState = await future;
+    await _saveState(saveState.withCloseOrRestart());
+  }
+
   Future<void> saveBackground({required Background background}) async {
     final saveState = await future;
     await _saveState(saveState.withBackground(background: background));
@@ -58,6 +64,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
   Future<void> saveEnableAutoMove({required bool enableAutoMove}) async {
     final saveState = await future;
     await _saveState(saveState.withAutoMoveEnabled(enableAutoMove: enableAutoMove));
+  }
+
+  Future<void> saveAchievement({required Achievement achievement}) async {
+    final saveState = await future;
+    await _saveState(saveState.withAchievement(achievement: achievement));
   }
 
   Future<void> saveCheatCode() async {

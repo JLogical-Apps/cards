@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'save_state_notifier.dart';
+part of 'achievement_service.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$saveStateNotifierHash() => r'25b3d0bd30b8c2f40e279b5abac69c72a7932935';
+String _$achievementServiceHash() =>
+    r'5c1c580bdf66f0be18801ef343507f4be049c3f6';
 
-/// See also [SaveStateNotifier].
-@ProviderFor(SaveStateNotifier)
-final saveStateNotifierProvider =
-    AsyncNotifierProvider<SaveStateNotifier, SaveState>.internal(
-  SaveStateNotifier.new,
-  name: r'saveStateNotifierProvider',
+/// See also [achievementService].
+@ProviderFor(achievementService)
+final achievementServiceProvider = Provider<AchievementService>.internal(
+  achievementService,
+  name: r'achievementServiceProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$saveStateNotifierHash,
+      : _$achievementServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$SaveStateNotifier = AsyncNotifier<SaveState>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AchievementServiceRef = ProviderRef<AchievementService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

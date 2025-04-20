@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -13,6 +14,7 @@ import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/model/difficulty.dart';
 import 'package:solitaire/model/game.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
+import 'package:solitaire/services/achievement_service.dart';
 import 'package:solitaire/services/audio_service.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
@@ -29,6 +31,7 @@ class CardScaffold extends HookConsumerWidget {
   final Function() onRestart;
   final Function()? onUndo;
 
+  final FutureOr Function()? onVictory;
   final bool isVictory;
 
   const CardScaffold({
@@ -39,6 +42,7 @@ class CardScaffold extends HookConsumerWidget {
     required this.onNewGame,
     required this.onRestart,
     required this.onUndo,
+    this.onVictory,
     this.isVictory = false,
   });
 
@@ -55,12 +59,17 @@ class CardScaffold extends HookConsumerWidget {
 
     useEffect(() {
       if (isVictory) {
-        ref.read(audioServiceProvider).playWin();
-        ref.read(saveStateNotifierProvider.notifier).saveGameCompleted(
-              game: game,
-              difficulty: difficulty,
-              duration: currentTimeState.value.difference(startTimeState.value),
-            );
+        final duration = currentTimeState.value.difference(startTimeState.value);
+        () async {
+          ref.read(audioServiceProvider).playWin();
+          await onVictory?.call();
+          await ref
+              .read(saveStateNotifierProvider.notifier)
+              .saveGameCompleted(game: game, difficulty: difficulty, duration: duration);
+          ref
+              .read(achievementServiceProvider)
+              .checkGameCompletionAchievements(game: game, difficulty: difficulty, duration: duration);
+        }();
       }
       return null;
     }, [isVictory]);
@@ -89,6 +98,23 @@ class CardScaffold extends HookConsumerWidget {
       confettiController.play();
     } else {
       confettiController.stop();
+    }
+
+    void startNewGame() {
+      startTimeState.value = DateTime.now();
+      onNewGame();
+      ref.read(saveStateNotifierProvider.notifier).saveGameCloseOrRestart();
+    }
+
+    void restartGame() {
+      startTimeState.value = DateTime.now();
+      onRestart();
+      ref.read(saveStateNotifierProvider.notifier).saveGameCloseOrRestart();
+    }
+
+    void closeGame() {
+      ref.read(saveStateNotifierProvider.notifier).saveGameCloseOrRestart();
+      context.pushReplacement(() => HomePage());
     }
 
     if (saveState == null) {
@@ -134,23 +160,17 @@ class CardScaffold extends HookConsumerWidget {
                                     menuChildren: [
                                       MenuItemButton(
                                         leadingIcon: Icon(Icons.star_border),
-                                        onPressed: () {
-                                          startTimeState.value = DateTime.now();
-                                          onNewGame();
-                                        },
+                                        onPressed: startNewGame,
                                         child: Text('New Game'),
                                       ),
                                       MenuItemButton(
                                         leadingIcon: Icon(Icons.restart_alt),
-                                        onPressed: () {
-                                          startTimeState.value = DateTime.now();
-                                          onRestart();
-                                        },
+                                        onPressed: restartGame,
                                         child: Text('Restart Game'),
                                       ),
                                       MenuItemButton(
                                         leadingIcon: Icon(Icons.close),
-                                        onPressed: () => context.pushReplacement(() => HomePage()),
+                                        onPressed: closeGame,
                                         child: Text('Close'),
                                       ),
                                     ],
@@ -226,8 +246,7 @@ class CardScaffold extends HookConsumerWidget {
                                             title: Text('New Game'),
                                             leading: Icon(Icons.star_border),
                                             onPressed: (context) {
-                                              startTimeState.value = DateTime.now();
-                                              onNewGame();
+                                              startNewGame();
                                               Navigator.of(context).pop();
                                             },
                                           ),
@@ -235,8 +254,7 @@ class CardScaffold extends HookConsumerWidget {
                                             title: Text('Restart Game'),
                                             leading: Icon(Icons.restart_alt),
                                             onPressed: (_) {
-                                              startTimeState.value = DateTime.now();
-                                              onRestart();
+                                              restartGame();
                                               Navigator.of(context).pop();
                                             },
                                           ),
@@ -245,7 +263,7 @@ class CardScaffold extends HookConsumerWidget {
                                             leading: Icon(Icons.close),
                                             onPressed: (_) {
                                               Navigator.of(context).pop();
-                                              context.pushReplacement(() => HomePage());
+                                              closeGame();
                                             },
                                           ),
                                         ],
@@ -346,10 +364,7 @@ class CardScaffold extends HookConsumerWidget {
                             icon: Icon(Icons.star_border),
                           ),
                           ElevatedButton.icon(
-                            onPressed: () {
-                              startTimeState.value = DateTime.now();
-                              onRestart();
-                            },
+                            onPressed: () => restartGame(),
                             label: Text('Restart Game'),
                             icon: Icon(Icons.restart_alt),
                           ),

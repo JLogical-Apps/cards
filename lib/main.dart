@@ -4,6 +4,8 @@ import 'package:solitaire/home_page.dart';
 import 'package:solitaire/licenses.dart';
 import 'package:solitaire/styles/playing_card_asset_bundle_cache.dart';
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await registerExtraLicenses();
@@ -12,6 +14,7 @@ Future<void> main() async {
   runApp(ProviderScope(
     child: MaterialApp(
       title: 'Cards',
+      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

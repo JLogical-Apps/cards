@@ -57,7 +57,7 @@ class SettingsDialog {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                    'Are you sure you want to delete your data? This will delete all progress on your achievements, unlockables, and difficulties. You cannot undo this action.'),
+                                    'Are you sure you want to delete your data? This will delete all progress on your achievements and difficulties. You cannot undo this action.'),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
