@@ -29,6 +29,7 @@ class CardScaffold extends HookConsumerWidget {
 
   final Function() onNewGame;
   final Function() onRestart;
+  final Function() onTutorial;
   final Function()? onUndo;
 
   final FutureOr Function()? onVictory;
@@ -41,6 +42,7 @@ class CardScaffold extends HookConsumerWidget {
     required this.builder,
     required this.onNewGame,
     required this.onRestart,
+    required this.onTutorial,
     required this.onUndo,
     this.onVictory,
     this.isVictory = false,
@@ -169,6 +171,11 @@ class CardScaffold extends HookConsumerWidget {
                                         child: Text('Restart Game'),
                                       ),
                                       MenuItemButton(
+                                        leadingIcon: Icon(Icons.question_mark),
+                                        onPressed: onTutorial,
+                                        child: Text('Tutorial'),
+                                      ),
+                                      MenuItemButton(
                                         leadingIcon: Icon(Icons.close),
                                         onPressed: closeGame,
                                         child: Text('Close'),
@@ -255,6 +262,14 @@ class CardScaffold extends HookConsumerWidget {
                                             leading: Icon(Icons.restart_alt),
                                             onPressed: (_) {
                                               restartGame();
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                          BottomSheetAction(
+                                            title: Text('Tutorial'),
+                                            leading: Icon(Icons.question_mark),
+                                            onPressed: (_) {
+                                              onTutorial();
                                               Navigator.of(context).pop();
                                             },
                                           ),

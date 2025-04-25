@@ -28,20 +28,29 @@ import 'package:solitaire/utils/duration_extensions.dart';
 import 'package:utils/utils.dart';
 
 typedef GameDetails = ({
-  Widget Function(Difficulty) builder,
+  Widget Function(Difficulty, bool startWithTutorial) builder,
   Difficulty difficulty,
   Function(Difficulty) onChangeDifficulty,
   GameState? gameState,
-  Function(Game) onStartGame,
+  Function(Game, bool startWithTutorial) onStartGame,
 });
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  Map<Game, Widget Function(Difficulty)> get gameBuilders => {
-        Game.golf: (Difficulty difficulty) => GolfSolitaire(difficulty: difficulty),
-        Game.klondike: (Difficulty difficulty) => Solitaire(difficulty: difficulty),
-        Game.freeCell: (Difficulty difficulty) => FreeCell(difficulty: difficulty),
+  Map<Game, Widget Function(Difficulty, bool startWithTutorial)> get gameBuilders => {
+        Game.golf: (Difficulty difficulty, bool startWithTutorial) => GolfSolitaire(
+              difficulty: difficulty,
+              startWithTutorial: startWithTutorial,
+            ),
+        Game.klondike: (Difficulty difficulty, bool startWithTutorial) => Solitaire(
+              difficulty: difficulty,
+              startWithTutorial: startWithTutorial,
+            ),
+        Game.freeCell: (Difficulty difficulty, bool startWithTutorial) => FreeCell(
+              difficulty: difficulty,
+              startWithTutorial: startWithTutorial,
+            ),
       };
 
   @override
@@ -64,9 +73,9 @@ class HomePage extends ConsumerWidget {
                   difficultyByGameState.value = {...difficultyByGameState.value, game: difficulty},
               builder: builder,
               gameState: saveState.gameStates[game],
-              onStartGame: (game) {
+              onStartGame: (game, startWithTutorial) {
                 final difficulty = difficultyByGameState.value[game]!;
-                context.pushReplacement(() => GameView(cardGame: builder(difficulty)));
+                context.pushReplacement(() => GameView(cardGame: builder(difficulty, startWithTutorial)));
                 ref.read(saveStateNotifierProvider.notifier).saveGameStarted(game: game, difficulty: difficulty);
               },
             )));
@@ -191,7 +200,7 @@ class HomePage extends ConsumerWidget {
                           child: Stack(
                             children: [
                               Positioned.fill(child: background.build()),
-                              IgnorePointer(child: builder(Difficulty.classic)),
+                              IgnorePointer(child: builder(Difficulty.classic, false)),
                               Positioned.fill(
                                 child: ColoredBox(
                                   color: Colors.white.withValues(alpha: 0.7),
@@ -234,13 +243,32 @@ class HomePage extends ConsumerWidget {
                       game: selectedGameState.value,
                       gameState: gameState,
                     ),
-                    ElevatedButton(
-                      onPressed: () => onStartGame(selectedGameState.value),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: Text('Play'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 8,
+                      children: [
+                        SizedBox(width: 48),
+                        ElevatedButton(
+                          onPressed: () => onStartGame(selectedGameState.value, false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('Play'),
+                        ),
+                        Tooltip(
+                          message: 'Learn to Play',
+                          child: IconButton(
+                            constraints: BoxConstraints.tightFor(width: 32, height: 32),
+                            icon: Icon(Symbols.question_mark, fill: 1, size: 14),
+                            onPressed: () => onStartGame(selectedGameState.value, true),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Color(0xFFAAAAAA),
+                              foregroundColor: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -284,7 +312,7 @@ class HomePage extends ConsumerWidget {
                         child: Stack(
                           children: [
                             Positioned.fill(child: background.build()),
-                            IgnorePointer(child: builder(Difficulty.classic)),
+                            IgnorePointer(child: builder(Difficulty.classic, false)),
                             Positioned.fill(
                               child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),
                             ),
@@ -307,13 +335,32 @@ class HomePage extends ConsumerWidget {
                                       game: game,
                                       gameState: gameState,
                                     ),
-                                    ElevatedButton(
-                                      onPressed: () => onStartGame(game),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.black,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: Text('Play'),
+                                    Row(
+                                      spacing: 8,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(width: 48),
+                                        ElevatedButton(
+                                          onPressed: () => onStartGame(game, false),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.black,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: Text('Play'),
+                                        ),
+                                        Tooltip(
+                                          message: 'Learn to Play',
+                                          child: IconButton(
+                                            constraints: BoxConstraints.tightFor(width: 32, height: 32),
+                                            icon: Icon(Symbols.question_mark, fill: 1, size: 14),
+                                            onPressed: () => onStartGame(game, true),
+                                            style: IconButton.styleFrom(
+                                              backgroundColor: Color(0xFFAAAAAA),
+                                              foregroundColor: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

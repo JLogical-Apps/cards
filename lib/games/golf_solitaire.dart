@@ -11,6 +11,8 @@ import 'package:solitaire/styles/playing_card_style.dart';
 import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
+import 'package:solitaire/widgets/game_tutorial.dart';
+import 'package:utils/utils.dart';
 
 class GolfSolitaireState {
   final List<List<SuitedCard>> cards;
@@ -89,8 +91,13 @@ class GolfSolitaireState {
 
 class GolfSolitaire extends HookConsumerWidget {
   final Difficulty difficulty;
+  final bool startWithTutorial;
 
-  const GolfSolitaire({super.key, required this.difficulty});
+  const GolfSolitaire({
+    super.key,
+    required this.difficulty,
+    this.startWithTutorial = false,
+  });
 
   GolfSolitaireState get initialState => GolfSolitaireState.getInitialState(
         startWithDraw: difficulty.index >= Difficulty.royal.index,
@@ -105,6 +112,42 @@ class GolfSolitaire extends HookConsumerWidget {
       () => ref.read(achievementServiceProvider).checkGolfSolitaireMoveAchievements(state: state.value),
     );
 
+    final tableauKey = useMemoized(() => GlobalKey());
+    final foundationKey = useMemoized(() => GlobalKey());
+    final drawPileKey = useMemoized(() => GlobalKey());
+
+    void startTutorial() {
+      showGameTutorial(
+        context,
+        screens: [
+          TutorialScreen.key(
+            key: tableauKey,
+            message: 'Welcome to Golf Solitaire! Your goal is to clear all the cards from the tableau.',
+          ),
+          TutorialScreen.key(
+            key: foundationKey,
+            message:
+                'Cards are cleared by moving them to the foundation. A card can be moved if its rank is one higher or one lower than the current foundation card. Aces and Kings wrap around (Ace > King > Queen or King > Ace > 2).',
+          ),
+          TutorialScreen.key(
+            key: drawPileKey,
+            message:
+                'When no moves are available from the tableau, tap the draw pile to flip a new card to the foundation. This gives you new options to continue clearing cards.',
+          ),
+          TutorialScreen.everything(
+              message:
+                  "Win by clearing all cards from the tableau. If you run out of cards in the draw pile and can't make any more moves, the game is over. Tap to begin playing!"),
+        ],
+      );
+    }
+
+    useOneTimeEffect(() {
+      if (startWithTutorial) {
+        Future.delayed(Duration(milliseconds: 200)).then((_) => startTutorial());
+      }
+      return null;
+    });
+
     return CardScaffold(
       game: Game.golf,
       difficulty: difficulty,
@@ -112,6 +155,7 @@ class GolfSolitaire extends HookConsumerWidget {
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
+      onTutorial: startTutorial,
       onVictory: () => ref
           .read(achievementServiceProvider)
           .checkGolfSolitaireCompletionAchievements(state: state.value, difficulty: difficulty),
@@ -136,6 +180,7 @@ class GolfSolitaire extends HookConsumerWidget {
               children: [
                 Expanded(
                   child: Flex(
+                    key: tableauKey,
                     direction: axis,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -166,6 +211,7 @@ class GolfSolitaire extends HookConsumerWidget {
                   spacing: 40,
                   children: [
                     CardDeck<SuitedCard, dynamic>.flipped(
+                      key: drawPileKey,
                       value: 'deck',
                       values: state.value.deck,
                       onCardPressed: (_) {
@@ -174,6 +220,7 @@ class GolfSolitaire extends HookConsumerWidget {
                       },
                     ),
                     CardDeck<SuitedCard, dynamic>(
+                      key: foundationKey,
                       value: 'completed',
                       values: state.value.completedCards,
                     ),

@@ -16,6 +16,8 @@ import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
+import 'package:solitaire/widgets/game_tutorial.dart';
+import 'package:utils/utils.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 
 class SolitaireState {
@@ -339,8 +341,9 @@ class SolitaireState {
 
 class Solitaire extends HookConsumerWidget {
   final Difficulty difficulty;
+  final bool startWithTutorial;
 
-  const Solitaire({super.key, required this.difficulty});
+  const Solitaire({super.key, required this.difficulty, this.startWithTutorial = false});
 
   int get drawAmount => switch (difficulty) {
         Difficulty.classic => 1,
@@ -356,11 +359,52 @@ class Solitaire extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
+    final tableauKey = useMemoized(() => GlobalKey());
+    final foundationKey = useMemoized(() => GlobalKey());
+    final drawPileKey = useMemoized(() => GlobalKey());
+    final wastePileKey = useMemoized(() => GlobalKey());
+
+    void startTutorial() {
+      showGameTutorial(
+        context,
+        screens: [
+          TutorialScreen.key(
+            key: tableauKey,
+            message:
+                'Welcome to Solitaire! The tableau contains seven piles of cards. Only the top card of each pile is face-up. Build down in alternating colors (red on black, black on red) in descending order.',
+          ),
+          TutorialScreen.key(
+            key: foundationKey,
+            message:
+                'Your goal is to build four foundation piles, one for each suit, from Ace to King. Move Aces here first, then build up in suit order.',
+          ),
+          TutorialScreen.key(key: drawPileKey, message: 'When you need more cards, tap the draw pile to flip cards.'),
+          TutorialScreen.key(
+            key: wastePileKey,
+            message:
+                'Cards drawn from the draw pile appear here. The top card can be played to the tableau or foundations.',
+          ),
+          TutorialScreen.everything(
+            message:
+                'Win by moving all cards to the foundations. You can move groups of properly sequenced cards between tableau piles. Empty tableau spaces can only be filled with Kings. Tap to begin playing!',
+          ),
+        ],
+      );
+    }
+
+    useOneTimeEffect(() {
+      if (startWithTutorial) {
+        Future.delayed(Duration(milliseconds: 200)).then((_) => startTutorial());
+      }
+      return null;
+    });
+
     return CardScaffold(
       game: Game.klondike,
       difficulty: difficulty,
       onNewGame: () => state.value = initialState,
       onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(usedUndo: false),
+      onTutorial: startTutorial,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
       onVictory: () => ref
@@ -380,6 +424,7 @@ class Solitaire extends HookConsumerWidget {
         final cardOffset = sizeMultiplier * 25;
 
         final hiddenDeck = GestureDetector(
+          key: drawPileKey,
           behavior: HitTestBehavior.opaque,
           onTap: () {
             if (state.value.deck.isEmpty) {
@@ -395,6 +440,7 @@ class Solitaire extends HookConsumerWidget {
           ),
         );
         final exposedDeck = ExposedCardDeck<SuitedCard, dynamic>(
+          key: wastePileKey,
           value: 'revealed-deck',
           values: state.value.revealedDeck,
           amountExposed: drawAmount,
@@ -455,6 +501,7 @@ class Solitaire extends HookConsumerWidget {
                   ],
                   Expanded(
                     child: Flex(
+                        key: tableauKey,
                         direction: axis,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,11 +546,16 @@ class Solitaire extends HookConsumerWidget {
                         hiddenDeck,
                         exposedDeck,
                         Spacer(),
-                        ...completedDecks,
+                        Column(
+                          key: foundationKey,
+                          spacing: spacing,
+                          children: completedDecks,
+                        ),
                       ],
                     )
                   else
                     Column(
+                      key: foundationKey,
                       spacing: spacing,
                       children: completedDecks,
                     ),

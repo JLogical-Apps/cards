@@ -16,6 +16,8 @@ import 'package:solitaire/utils/axis_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/widgets/card_scaffold.dart';
 import 'package:solitaire/widgets/delayed_auto_move_listener.dart';
+import 'package:solitaire/widgets/game_tutorial.dart';
+import 'package:utils/utils.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 
 abstract class GroupValue extends Equatable {
@@ -512,8 +514,9 @@ class FreeCellState {
 
 class FreeCell extends HookConsumerWidget {
   final Difficulty difficulty;
+  final bool startWithTutorial;
 
-  const FreeCell({super.key, required this.difficulty});
+  const FreeCell({super.key, required this.difficulty, this.startWithTutorial = false});
 
   FreeCellState get initialState => FreeCellState.getInitialState(
         freeCellCount: switch (difficulty) {
@@ -532,11 +535,50 @@ class FreeCell extends HookConsumerWidget {
       () => ref.read(achievementServiceProvider).checkFreeCellMoveAchievements(state: state.value),
     );
 
+    final tableauKey = useMemoized(() => GlobalKey());
+    final foundationKey = useMemoized(() => GlobalKey());
+    final freeCellsKey = useMemoized(() => GlobalKey());
+
+    void startTutorial() {
+      showGameTutorial(
+        context,
+        screens: [
+          TutorialScreen.key(
+            key: tableauKey,
+            message:
+                'Welcome to FreeCell! All cards start face-up in the tableau. Build down in alternating colors (red on black, black on red) in descending order.',
+          ),
+          TutorialScreen.key(
+            key: freeCellsKey,
+            message:
+                'These are temporary storage spaces. Each can hold one card at a time, giving you flexibility to move cards around the tableau.',
+          ),
+          TutorialScreen.key(
+            key: foundationKey,
+            message:
+                'Build four foundation piles, one for each suit, from Ace to King. Move Aces here first, then build up in suit order.',
+          ),
+          TutorialScreen.everything(
+            message:
+                'Win by moving all cards to the foundations. While you technically move one card at a time, the game lets you move groups of properly sequenced cards if you have enough empty free cells and tableau spaces to make the individual moves. Empty tableau spaces can be filled with any card. Strategic use of free cells is key to winning. Tap to begin playing!',
+          ),
+        ],
+      );
+    }
+
+    useOneTimeEffect(() {
+      if (startWithTutorial) {
+        Future.delayed(Duration(milliseconds: 200)).then((_) => startTutorial());
+      }
+      return null;
+    });
+
     return CardScaffold(
       game: Game.freeCell,
       difficulty: difficulty,
       onNewGame: () => state.value = initialState,
       onRestart: () => state.value = (state.value.history.firstOrNull ?? state.value).copyWith(canAutoMove: true),
+      onTutorial: startTutorial,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
       onVictory: () => ref
@@ -582,58 +624,76 @@ class FreeCell extends HookConsumerWidget {
                 children: [
                   Flex(
                     direction: axis,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ...state.value.freeCells.mapIndexed((i, card) => CardDeck<SuitedCard, GroupValue>(
-                            value: FreeCellGroupValue(i),
-                            values: card == null ? [] : [card],
-                            canGrab: true,
-                            canMoveCardHere: (move) => move.cardValues.length == 1 && card == null,
-                            onCardMovedHere: (move) {
-                              ref.read(audioServiceProvider).playPlace();
-                              state.value =
-                                  state.value.withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i));
-                            },
-                            onCardPressed: (card) {
-                              final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
-                              if (newState != null) {
-                                ref.read(audioServiceProvider).playPlace();
-                                state.value = newState;
-                              }
-                            },
-                          )),
-                      ...List.filled(
-                        4 - state.value.freeCells.length,
-                        SizedBox.fromSize(size: Size(69, 93) * sizeMultiplier),
+                      Expanded(
+                        child: Flex(
+                          key: freeCellsKey,
+                          direction: axis,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ...state.value.freeCells.mapIndexed((i, card) => CardDeck<SuitedCard, GroupValue>(
+                                  value: FreeCellGroupValue(i),
+                                  values: card == null ? [] : [card],
+                                  canGrab: true,
+                                  canMoveCardHere: (move) => move.cardValues.length == 1 && card == null,
+                                  onCardMovedHere: (move) {
+                                    ref.read(audioServiceProvider).playPlace();
+                                    state.value = state.value
+                                        .withMove(move.cardValues, move.fromGroupValue, FreeCellGroupValue(i));
+                                  },
+                                  onCardPressed: (card) {
+                                    final newState = state.value.withAutoMove(freeCellGroup: FreeCellGroupValue(i));
+                                    if (newState != null) {
+                                      ref.read(audioServiceProvider).playPlace();
+                                      state.value = newState;
+                                    }
+                                  },
+                                )),
+                            ...List.filled(
+                              4 - state.value.freeCells.length,
+                              SizedBox.fromSize(size: Size(69, 93) * sizeMultiplier),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox.square(dimension: spacing),
-                      ...state.value.foundationCards.entries.map<Widget>((entry) => CardDeck<SuitedCard, GroupValue>(
-                            value: FoundationGroupValue(entry.key),
-                            values: entry.value,
-                            canGrab: true,
-                            canMoveCardHere: (move) =>
-                                move.cardValues.length == 1 &&
-                                canAddToFoundation(move.cardValues.first, entry.key, entry.value),
-                            onCardMovedHere: (move) {
-                              ref.read(audioServiceProvider).playPlace();
-                              state.value = state.value
-                                  .withMove(move.cardValues, move.fromGroupValue, FoundationGroupValue(entry.key));
-                            },
-                            onCardPressed: (card) {
-                              final newState = state.value.withAutoMove(
-                                foundationGroup: FoundationGroupValue(entry.key),
-                              );
-                              if (newState != null) {
-                                ref.read(audioServiceProvider).playPlace();
-                                state.value = newState;
-                              }
-                            },
-                          )),
+                      Expanded(
+                        child: Flex(
+                          key: foundationKey,
+                          direction: axis,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: state.value.foundationCards.entries
+                              .map<Widget>((entry) => CardDeck<SuitedCard, GroupValue>(
+                                    value: FoundationGroupValue(entry.key),
+                                    values: entry.value,
+                                    canGrab: true,
+                                    canMoveCardHere: (move) =>
+                                        move.cardValues.length == 1 &&
+                                        canAddToFoundation(move.cardValues.first, entry.key, entry.value),
+                                    onCardMovedHere: (move) {
+                                      ref.read(audioServiceProvider).playPlace();
+                                      state.value = state.value.withMove(
+                                          move.cardValues, move.fromGroupValue, FoundationGroupValue(entry.key));
+                                    },
+                                    onCardPressed: (card) {
+                                      final newState = state.value.withAutoMove(
+                                        foundationGroup: FoundationGroupValue(entry.key),
+                                      );
+                                      if (newState != null) {
+                                        ref.read(audioServiceProvider).playPlace();
+                                        state.value = newState;
+                                      }
+                                    },
+                                  ))
+                              .toList(),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox.square(dimension: spacing),
                   Expanded(
                     child: Flex(
+                      key: tableauKey,
                       direction: axis,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
