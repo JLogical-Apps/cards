@@ -527,6 +527,11 @@ class FreeCell extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
 
+    useOnListenableChange(
+      state,
+      () => ref.read(achievementServiceProvider).checkFreeCellMoveAchievements(state: state.value),
+    );
+
     return CardScaffold(
       game: Game.freeCell,
       difficulty: difficulty,

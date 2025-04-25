@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:solitaire/model/achievement.dart';
 import 'package:solitaire/model/card_back.dart';
 import 'package:solitaire/providers/save_state_notifier.dart';
+import 'package:solitaire/services/achievement_service.dart';
 
 class AchievementDialog {
   static Future<void> show(BuildContext context) async {
@@ -19,22 +21,33 @@ class AchievementDialog {
             title: Text('Achievements'),
             contentPadding: EdgeInsets.zero,
             children: [
-              ...Achievement.values.map((achievement) => ListTile(
-                    title: Text(achievement.name),
-                    subtitle: Text(achievement.description),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: SizedBox.square(
-                        dimension: 48,
-                        child: saveState.achievements.contains(achievement)
-                            ? CardBack.values.firstWhere((back) => back.achievementLock == achievement).build()
-                            : ColoredBox(
-                                color: Colors.grey,
-                                child: Icon(Icons.question_mark),
-                              ),
+              ...Achievement.values.map((achievement) => HookBuilder(builder: (context) {
+                    final tapsState = useState(0);
+                    return GestureDetector(
+                      onTap: () {
+                        tapsState.value += 1;
+                        if (tapsState.value == 10 && saveState.achievements.contains(achievement)) {
+                          ref.read(achievementServiceProvider).deleteAchievement(achievement);
+                        }
+                      },
+                      child: ListTile(
+                        title: Text(achievement.name),
+                        subtitle: Text(achievement.description),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox.square(
+                            dimension: 48,
+                            child: saveState.achievements.contains(achievement)
+                                ? CardBack.values.firstWhere((back) => back.achievementLock == achievement).build()
+                                : ColoredBox(
+                                    color: Colors.grey,
+                                    child: Icon(Icons.question_mark),
+                                  ),
+                          ),
+                        ),
                       ),
-                    ),
-                  )),
+                    );
+                  })),
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(

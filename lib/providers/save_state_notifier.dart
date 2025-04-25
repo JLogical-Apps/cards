@@ -71,6 +71,11 @@ class SaveStateNotifier extends _$SaveStateNotifier {
     await _saveState(saveState.withAchievement(achievement: achievement));
   }
 
+  Future<void> deleteAchievement({required Achievement achievement}) async {
+    final saveState = await future;
+    await _saveState(saveState.withAchievementRemoved(achievement: achievement));
+  }
+
   Future<void> saveCheatCode() async {
     final saveState = await future;
     await _saveState(saveState.withCheatCode());

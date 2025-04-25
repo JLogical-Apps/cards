@@ -55,17 +55,17 @@ const _$GameEnumMap = {
 };
 
 const _$AchievementEnumMap = {
+  Achievement.fullHouse: 'fullHouse',
+  Achievement.royalFlush: 'royalFlush',
   Achievement.speedDealer: 'speedDealer',
   Achievement.grandSlam: 'grandSlam',
   Achievement.suitedUp: 'suitedUp',
-  Achievement.deckWhisperer: 'deckWhisperer',
-  Achievement.fullHouse: 'fullHouse',
-  Achievement.birdie: 'birdie',
   Achievement.stackTheDeck: 'stackTheDeck',
-  Achievement.royalFlush: 'royalFlush',
+  Achievement.deckWhisperer: 'deckWhisperer',
+  Achievement.aceUpYourSleeve: 'aceUpYourSleeve',
+  Achievement.birdie: 'birdie',
   Achievement.cleanSweep: 'cleanSweep',
   Achievement.perfectPlanning: 'perfectPlanning',
-  Achievement.aceUpYourSleeve: 'aceUpYourSleeve',
 };
 
 const _$DifficultyEnumMap = {

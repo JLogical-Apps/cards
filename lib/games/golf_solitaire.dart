@@ -112,8 +112,9 @@ class GolfSolitaire extends HookConsumerWidget {
       onRestart: () => state.value = state.value.history.firstOrNull ?? state.value,
       onUndo: state.value.history.isEmpty ? null : () => state.value = state.value.withUndo(),
       isVictory: state.value.isVictory,
-      onVictory: () =>
-          ref.read(achievementServiceProvider).checkGolfSolitaireCompletionAchievements(state: state.value),
+      onVictory: () => ref
+          .read(achievementServiceProvider)
+          .checkGolfSolitaireCompletionAchievements(state: state.value, difficulty: difficulty),
       builder: (context, constraints, cardBack, autoMoveEnabled, gameKey) {
         final axis = constraints.largestAxis;
         final minSize = constraints.smallest.longestSide;

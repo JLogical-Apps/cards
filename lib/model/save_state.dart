@@ -94,6 +94,8 @@ class SaveState {
   SaveState withAutoMoveEnabled({required bool enableAutoMove}) => copyWith(enableAutoMove: enableAutoMove);
   SaveState withAchievement({required Achievement achievement}) =>
       copyWith(achievements: {...achievements, achievement});
+  SaveState withAchievementRemoved({required Achievement achievement}) =>
+      copyWith(achievements: {...achievements}..remove(achievement));
 
   SaveState withCheatCode() => copyWith(
         gameStates: Game.values.mapToMap((value) => MapEntry(

@@ -8,24 +8,24 @@ import 'package:vector_graphics/vector_graphics.dart';
 @JsonEnum()
 enum CardBack {
   redStripes(assetName: 'back', fallbackColor: ColorLibrary.red400),
-  stoneStripes(assetName: 'back', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.speedDealer),
-  skyStripes(assetName: 'back', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.grandSlam),
-  violetStripes(assetName: 'back', fallbackColor: ColorLibrary.violet400, achievementLock: Achievement.suitedUp),
-  redPoly(assetName: 'red-poly', fallbackColor: ColorLibrary.red400, achievementLock: Achievement.deckWhisperer),
-  stonePoly(assetName: 'stone-poly', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.fullHouse),
-  skyPoly(assetName: 'sky-poly', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.birdie),
+  stoneStripes(assetName: 'back', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.fullHouse),
+  skyStripes(assetName: 'back', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.royalFlush),
+  violetStripes(assetName: 'back', fallbackColor: ColorLibrary.violet400, achievementLock: Achievement.speedDealer),
+  redPoly(assetName: 'red-poly', fallbackColor: ColorLibrary.red400, achievementLock: Achievement.grandSlam),
+  stonePoly(assetName: 'stone-poly', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.suitedUp),
+  skyPoly(assetName: 'sky-poly', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.stackTheDeck),
   violetPoly(
     assetName: 'violet-poly',
     fallbackColor: ColorLibrary.violet400,
-    achievementLock: Achievement.stackTheDeck,
+    achievementLock: Achievement.deckWhisperer,
   ),
-  redSteps(assetName: 'red-steps', fallbackColor: ColorLibrary.red400, achievementLock: Achievement.royalFlush),
-  stoneSteps(assetName: 'stone-steps', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.cleanSweep),
-  skySteps(assetName: 'sky-steps', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.perfectPlanning),
+  redSteps(assetName: 'red-steps', fallbackColor: ColorLibrary.red400, achievementLock: Achievement.aceUpYourSleeve),
+  stoneSteps(assetName: 'stone-steps', fallbackColor: ColorLibrary.stone400, achievementLock: Achievement.birdie),
+  skySteps(assetName: 'sky-steps', fallbackColor: ColorLibrary.sky400, achievementLock: Achievement.cleanSweep),
   violetSteps(
     assetName: 'violet-steps',
     fallbackColor: ColorLibrary.violet400,
-    achievementLock: Achievement.aceUpYourSleeve,
+    achievementLock: Achievement.perfectPlanning,
   );
 
   final String assetName;

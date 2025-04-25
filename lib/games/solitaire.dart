@@ -355,10 +355,6 @@ class Solitaire extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = useState(initialState);
-    useOnListenableChange(
-      state,
-      () => ref.read(achievementServiceProvider).checkSolitaireMoveAchievements(state: state.value),
-    );
 
     return CardScaffold(
       game: Game.klondike,

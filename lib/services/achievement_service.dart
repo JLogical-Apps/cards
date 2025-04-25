@@ -51,21 +51,24 @@ class AchievementService {
   }
 
   Future<void> checkGolfSolitaireMoveAchievements({required GolfSolitaireState state}) async {
-    if (state.chain == 10) {
+    if (state.chain == 20) {
       await _markAchievement(Achievement.grandSlam);
     }
   }
 
-  Future<void> checkGolfSolitaireCompletionAchievements({required GolfSolitaireState state}) async {
-    if (state.deck.isNotEmpty) {
+  Future<void> checkGolfSolitaireCompletionAchievements({
+    required GolfSolitaireState state,
+    required Difficulty difficulty,
+  }) async {
+    if (difficulty == Difficulty.ace && state.deck.isNotEmpty) {
       await _markAchievement(Achievement.birdie);
     }
   }
 
-  Future<void> checkSolitaireMoveAchievements({required SolitaireState state}) async {
-    final completedFoundations = state.completedCards.values.where((cards) => cards.length == 13).toList();
-    final emptyFoundations = state.completedCards
-        .where((suit, cards) => cards.isEmpty && state.history.every((state) => state.completedCards[suit]!.isEmpty))
+  Future<void> checkFreeCellMoveAchievements({required FreeCellState state}) async {
+    final completedFoundations = state.foundationCards.values.where((cards) => cards.length == 13).toList();
+    final emptyFoundations = state.foundationCards
+        .where((suit, cards) => cards.isEmpty && state.history.every((state) => state.foundationCards[suit]!.isEmpty))
         .values
         .toList();
 
@@ -93,6 +96,22 @@ class AchievementService {
   }) async {
     if (difficulty == Difficulty.ace && !state.usedUndo) {
       await _markAchievement(Achievement.perfectPlanning);
+    }
+  }
+
+  Future<void> deleteAchievement(Achievement achievement) async {
+    final saveState = await ref.read(saveStateNotifierProvider.future);
+    if (!saveState.achievements.contains(achievement)) {
+      return;
+    }
+
+    await ref.read(saveStateNotifierProvider.notifier).deleteAchievement(achievement: achievement);
+
+    final context = scaffoldMessengerKey.currentContext;
+    if (context != null) {
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text('Achievement "${achievement.name}" Deleted!')),
+      );
     }
   }
 
