@@ -10,10 +10,10 @@ enum Achievement {
   grandSlam('Grand Slam', 'In Golf Solitaire, make a chain of 20 consecutive cards.'),
   suitedUp(
     'Suited Up',
-    'In Free Cell, complete one entire suit foundation before starting others. (Hint: Disable Auto Move in Settings)',
+    'In Free Cell, fully complete one suit (Ace to King) before moving any other suits to foundations. (Hint: Disable Auto Move in Settings)',
   ),
   stackTheDeck('Stack the Deck', 'Win 3 games in a row without restarting a game.'),
-  deckWhisperer('Deck Whisperer', 'Win a Solitaire game without restarting the deck.'),
+  deckWhisperer('Deck Whisperer', 'Win a Solitaire game without cycling through the draw pile.'),
   aceUpYourSleeve('Ace Up Your Sleeve', 'Complete all games in Ace mode.'),
   birdie('Birdie', 'Win an Ace Golf Solitaire game with at least 1 card remaining in the draw pile.'),
   cleanSweep('Clean Sweep', 'Win an Ace Solitaire game without undoing any moves.'),
