@@ -1,3 +1,8 @@
+import 'package:solitaire/model/difficulty.dart';
+import 'package:solitaire/model/game.dart';
+import 'package:solitaire/model/save_state.dart';
+import 'package:utils/utils.dart';
+
 enum Achievement {
   fullHouse('Full House', 'Complete all games in Classic mode.'),
   royalFlush('Royal Flush', 'Complete all games in Royal mode.'),
@@ -18,4 +23,21 @@ enum Achievement {
   final String description;
 
   const Achievement(this.name, this.description);
+
+  int? getCurrentProgress({required SaveState saveState}) => switch (this) {
+        Achievement.fullHouse =>
+          saveState.gameStates.where((game, state) => state.states.containsKey(Difficulty.classic)).length,
+        Achievement.royalFlush =>
+          saveState.gameStates.where((game, state) => state.states.containsKey(Difficulty.royal)).length,
+        Achievement.aceUpYourSleeve =>
+          saveState.gameStates.where((game, state) => state.states.containsKey(Difficulty.ace)).length,
+        Achievement.stackTheDeck => saveState.winStreak,
+        _ => null,
+      };
+
+  int? getProgressMax() => switch (this) {
+        Achievement.fullHouse || Achievement.royalFlush || Achievement.aceUpYourSleeve => Game.values.length,
+        Achievement.stackTheDeck => 3,
+        _ => null,
+      };
 }

@@ -109,7 +109,7 @@ class SaveState {
                 ),
               ),
             )),
-        // achievements: Achievement.values.toSet(),
+        achievements: Achievement.values.toSet(),
       );
 
   SaveState copyWith({
