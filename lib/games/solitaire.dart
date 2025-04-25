@@ -487,6 +487,7 @@ class Solitaire extends HookConsumerWidget {
             ),
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (axis == Axis.horizontal) ...[
                     Column(
@@ -549,6 +550,7 @@ class Solitaire extends HookConsumerWidget {
                         Column(
                           key: foundationKey,
                           spacing: spacing,
+                          mainAxisSize: MainAxisSize.min,
                           children: completedDecks,
                         ),
                       ],
@@ -557,6 +559,7 @@ class Solitaire extends HookConsumerWidget {
                     Column(
                       key: foundationKey,
                       spacing: spacing,
+                      mainAxisSize: MainAxisSize.min,
                       children: completedDecks,
                     ),
                 ],
