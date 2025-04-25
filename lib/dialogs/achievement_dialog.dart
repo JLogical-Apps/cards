@@ -18,7 +18,7 @@ class AchievementDialog {
           }
 
           return SimpleDialog(
-            title: Text('Achievements'),
+            title: Text('Achievements (${saveState.achievements.length}/${Achievement.values.length})'),
             contentPadding: EdgeInsets.zero,
             children: [
               ...Achievement.values.map((achievement) => HookBuilder(
