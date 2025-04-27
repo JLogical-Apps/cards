@@ -16,7 +16,7 @@ class SupportDialog {
                   """\
 Love playing Cards? Here's how you can help: 
 
-⭐ **Star the [GitHub repository](https://github.com/JLogical-Apps/Solitaire)**  
+⭐ **Star the [GitHub repository](https://github.com/JLogical-Apps/cards)**  
    Help others discover this project.
 
 
@@ -25,7 +25,7 @@ Love playing Cards? Here's how you can help:
    
    
  🐛 **Report bugs or suggest features**  
-    Open an issue on [GitHub](https://github.com/JLogical-Apps/Solitaire/issues)
+    Open an issue on [GitHub](https://github.com/JLogical-Apps/cards/issues)
     
     
 💬 **Share with friends**  

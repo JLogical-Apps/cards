@@ -42,7 +42,7 @@ class SolitaireAboutDialog {
       children: [
         MarkdownBody(
           data:
-              'Built with ❤️ by [JLogical](https://www.jlogical.com).\n\nPowered by the custom-built [card_game](https://pub.dev/packages/card_game) package.\n\nFind the [source code on GitHub](https://github.com/JLogical-Apps/Solitaire).\n\nFollow development updates on [X](https://x.com/JakeBoychenko).',
+              'Built with ❤️ by [JLogical](https://www.jlogical.com).\n\nPowered by the custom-built [card_game](https://pub.dev/packages/card_game) package.\n\nFind the [source code on GitHub](https://github.com/JLogical-Apps/cards).\n\nFollow development updates on [X](https://x.com/JakeBoychenko).',
           onTapLink: (text, href, title) => launchUrlString(href!, mode: LaunchMode.externalApplication),
         ),
         SizedBox(height: 16),
@@ -76,7 +76,7 @@ class SolitaireAboutDialog {
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: () =>
-                    launchUrlString('https://github.com/JLogical-Apps/Solitaire', mode: LaunchMode.externalApplication),
+                    launchUrlString('https://github.com/JLogical-Apps/cards', mode: LaunchMode.externalApplication),
                 child: SizedBox.square(
                   dimension: 48,
                   child: Center(
