@@ -61,9 +61,16 @@ flutter:
     - assets/sounds/
 
 flutter_launcher_icons: # dart run flutter_launcher_icons
+  image_path: "assets/app_icon.png"
+
   android: "launcher_icon"
-  ios: true
-  image_path: "assets/cards.png"
+  adaptive_icon_foreground: "assets/cards_with_padding.png"
+  adaptive_icon_background: "#4CAF50"
   min_sdk_android: 21
+
+  ios: true
+  remove_alpha_ios: true
+
   web:
     generate: true
+    image_path: "assets/cards.png"
