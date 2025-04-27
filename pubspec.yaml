@@ -12,6 +12,7 @@ dependencies:
 
   adaptive_action_sheet: ^2.0.3
   audioplayers: ^6.4.0
+  card_game: ^2.0.0
   collection:
   confetti: ^0.8.0
   equatable: ^2.0.7
@@ -37,9 +38,6 @@ dependencies:
       url: https://github.com/JLogical-Apps/flood
       ref: v4.3
       path: packages/utils/utils
-
-  card_game:
-    path: ../cards
 
 dev_dependencies:
   flutter_test:
