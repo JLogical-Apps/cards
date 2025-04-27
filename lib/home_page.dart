@@ -25,6 +25,7 @@ import 'package:solitaire/providers/save_state_notifier.dart';
 import 'package:solitaire/utils/build_context_extensions.dart';
 import 'package:solitaire/utils/constraints_extensions.dart';
 import 'package:solitaire/utils/duration_extensions.dart';
+import 'package:solitaire/widgets/keep_alive_container.dart';
 import 'package:utils/utils.dart';
 
 typedef GameDetails = ({
@@ -187,35 +188,37 @@ class HomePage extends ConsumerWidget {
                   itemBuilder: (_, i) {
                     final (game, (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame)) =
                         gameDetails.entryRecords.toList()[i];
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Material(
-                        color: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: selectedGameState.value == game ? BorderSide(width: 4) : BorderSide.none,
-                        ),
-                        child: AspectRatio(
-                          aspectRatio: 3 / 2,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(child: background.build()),
-                              IgnorePointer(child: builder(Difficulty.classic, false)),
-                              Positioned.fill(
-                                child: ColoredBox(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  child: InkWell(
-                                    onTap: () => selectedGameState.value = game,
-                                    child: Center(
-                                      child: Text(
-                                        game.title,
-                                        style: Theme.of(context).textTheme.headlineLarge,
+                    return KeepAliveContainer(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Material(
+                          color: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: selectedGameState.value == game ? BorderSide(width: 4) : BorderSide.none,
+                          ),
+                          child: AspectRatio(
+                            aspectRatio: 3 / 2,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(child: background.build()),
+                                IgnorePointer(child: builder(Difficulty.classic, false)),
+                                Positioned.fill(
+                                  child: ColoredBox(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    child: InkWell(
+                                      onTap: () => selectedGameState.value = game,
+                                      child: Center(
+                                        child: Text(
+                                          game.title,
+                                          style: Theme.of(context).textTheme.headlineLarge,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -305,68 +308,70 @@ class HomePage extends ConsumerWidget {
                   children: gameDetails.mapToIterable((game, details) {
                     final (:difficulty, :onChangeDifficulty, :builder, :gameState, :onStartGame) = details;
 
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          children: [
-                            Positioned.fill(child: background.build()),
-                            IgnorePointer(child: builder(Difficulty.classic, false)),
-                            Positioned.fill(
-                              child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),
-                            ),
-                            Positioned.fill(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      game.title,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context).textTheme.headlineLarge,
-                                    ),
-                                    difficultyBar(
-                                      context,
-                                      selectedDifficulty: difficulty,
-                                      onChangeDifficulty: onChangeDifficulty,
-                                      game: game,
-                                      gameState: gameState,
-                                    ),
-                                    Row(
-                                      spacing: 8,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(width: 48),
-                                        ElevatedButton(
-                                          onPressed: () => onStartGame(game, false),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.black,
-                                            foregroundColor: Colors.white,
+                    return KeepAliveContainer(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Stack(
+                            children: [
+                              Positioned.fill(child: background.build()),
+                              IgnorePointer(child: builder(Difficulty.classic, false)),
+                              Positioned.fill(
+                                child: ColoredBox(color: Colors.white.withValues(alpha: 0.8)),
+                              ),
+                              Positioned.fill(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        game.title,
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context).textTheme.headlineLarge,
+                                      ),
+                                      difficultyBar(
+                                        context,
+                                        selectedDifficulty: difficulty,
+                                        onChangeDifficulty: onChangeDifficulty,
+                                        game: game,
+                                        gameState: gameState,
+                                      ),
+                                      Row(
+                                        spacing: 8,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(width: 48),
+                                          ElevatedButton(
+                                            onPressed: () => onStartGame(game, false),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.black,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            child: Text('Play'),
                                           ),
-                                          child: Text('Play'),
-                                        ),
-                                        Tooltip(
-                                          message: 'Learn to Play',
-                                          child: IconButton(
-                                            constraints: BoxConstraints.tightFor(width: 32, height: 32),
-                                            icon: Icon(Symbols.question_mark, fill: 1, size: 14),
-                                            onPressed: () => onStartGame(game, true),
-                                            style: IconButton.styleFrom(
-                                              backgroundColor: Color(0xFFAAAAAA),
-                                              foregroundColor: Colors.black,
+                                          Tooltip(
+                                            message: 'Learn to Play',
+                                            child: IconButton(
+                                              constraints: BoxConstraints.tightFor(width: 32, height: 32),
+                                              icon: Icon(Symbols.question_mark, fill: 1, size: 14),
+                                              onPressed: () => onStartGame(game, true),
+                                              style: IconButton.styleFrom(
+                                                backgroundColor: Color(0xFFAAAAAA),
+                                                foregroundColor: Colors.black,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
