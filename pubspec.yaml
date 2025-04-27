@@ -18,6 +18,7 @@ dependencies:
   flutter_hooks: ^0.21.2
   flutter_markdown: ^0.7.7
   flutter_svg: ^2.0.17
+  font_awesome_flutter: ^10.8.0
   hooks_riverpod: ^2.6.1
   intl: ^0.18.0
   json_annotation: ^4.9.0
@@ -58,6 +59,7 @@ flutter:
     - assets/
     - assets/backs/
     - assets/faces/
+    - assets/logos/
     - assets/sounds/
 
 flutter_launcher_icons: # dart run flutter_launcher_icons
