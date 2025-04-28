@@ -188,10 +188,11 @@ packages:
   card_game:
     dependency: "direct main"
     description:
-      path: "../cards"
-      relative: true
-    source: path
-    version: "1.1.1"
+      name: card_game
+      sha256: d5f0720c3f320fda8adc17f02f155f94fea799efa6dd557091fc60ca4f8055d9
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   chalkdart:
     dependency: transitive
     description:
