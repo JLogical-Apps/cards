@@ -4,31 +4,14 @@ A collection of classic card games built with Flutter, featuring Golf Solitaire,
 
 ## Features
 
-- **Three Classic Card Games**
-    - Golf Solitaire
-    - Klondike Solitaire (Solitaire)
-    - Free Cell
-
-- **Progressive Difficulty System**
-    - Classic (Traditional ruleset)
-    - Royal (Moderate difficulty)
-    - Ace (Challenging)
-
-- **Interactive Tutorials**
-    - Learn game mechanics with highlighted board elements
-    - Step-by-step guidance for each game
-
-- **Achievement System**
-    - Unlock new card back designs by completing challenges
-    - Track fastest completion times for each difficulty
-
-- **Customization Options**
-    - Custom card backs
-    - Background themes
-
-- **Cross-Platform Support**
-    - Responsive design for phones, tablets, and desktops
-    - Available on Web, iOS, and Android
+| Feature                           | Description                                                                                                     | Preview                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| **Three Classic Card Games**      | • Golf Solitaire<br>• Klondike Solitaire (Solitaire)<br>• Free Cell                                             | ![Games Preview](screenshots/games.gif)                 |
+| **Progressive Difficulty System** | • Classic (Traditional ruleset)<br>• Royal (Moderate difficulty)<br>• Ace (Challenging)                         | ![Difficulty Preview](screenshots/difficulties.gif)     |
+| **Interactive Tutorials**         | • Learn game mechanics with highlighted board elements<br>• Step-by-step guidance for each game                 | ![Tutorial Preview](screenshots/tutorial.gif)           |
+| **Achievement System**            | • Unlock new card back designs by completing challenges<br>• Track fastest completion times for each difficulty | ![Achievements Preview](screenshots/achievements.gif)   |
+| **Customization Options**         | • Custom card backs<br>• Background themes                                                                      | ![Customization Preview](screenshots/customization.gif) |
+| **Cross-Platform Support**        | • Responsive design for phones, tablets, and desktops                                                           | ![Responsive Preview](screenshots/responsiveness.gif)   |
 
 ## Live Demo
 
